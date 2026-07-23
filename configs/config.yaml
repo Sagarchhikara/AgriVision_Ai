@@ -3,7 +3,15 @@ seed: 42
 dataset:
   root: datasets/
 
+training:
+  stage1_epochs: 5      # frozen-backbone head training
+  stage2_epochs: 15      # fine-tuning (epochs - stage1_epochs)
+  stage1_lr: 0.0003
+  stage2_lr: 0.00003     # 10x lower — standard practice when unfreezing pretrained weights
 
+output:
+  checkpoint_dir: outputs/checkpoints
+  log_dir: outputs/logs
 model:
   name: efficientnet_b0
   pretrained: true
