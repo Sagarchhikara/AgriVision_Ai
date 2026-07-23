@@ -1,0 +1,18 @@
+seed: 42
+
+dataset:
+  root: datasets/
+
+training:
+  batch_size: 32
+  epochs: 20
+  learning_rate: 0.0003
+  image_size: 224
+
+model:
+  name: efficientnet_b0
+  pretrained: true
+
+output:
+  checkpoint_dir: outputs/checkpoints
+  
