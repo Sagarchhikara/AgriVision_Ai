@@ -53,9 +53,8 @@ def main():
     scheduler = CosineAnnealingLR(optimizer, T_max=stage1_epochs)
 
     trainer = Trainer(model, optimizer, criterion, device, checkpoint_dir, log_dir)
-    for epoch in range(1, stage1_epochs + 1):
-        trainer.fit(train_loader, val_loader, epochs=1, stage_name="stage1")
-        scheduler.step()
+    trainer.fit(train_loader, val_loader, epochs=stage1_epochs, stage_name="stage1",
+                scheduler=scheduler)
 
     # ---- Stage 2: unfreeze, fine-tune end-to-end at lower LR ----
     print("\n=== Stage 2: fine-tuning full network ===")
@@ -64,9 +63,8 @@ def main():
     scheduler = CosineAnnealingLR(optimizer, T_max=stage2_epochs)
 
     trainer.optimizer = optimizer  # swap optimizer, keep same trainer (checkpointing, best_acc)
-    for epoch in range(1, stage2_epochs + 1):
-        trainer.fit(train_loader, val_loader, epochs=1, stage_name="stage2")
-        scheduler.step()
+    trainer.fit(train_loader, val_loader, epochs=stage2_epochs, stage_name="stage2",
+                scheduler=scheduler)
 
     trainer.close()
     print(f"\nTraining complete. Best val_acc={trainer.best_acc:.4f}")

@@ -105,7 +105,7 @@ class Trainer:
         from torch.utils.tensorboard import SummaryWriter
         self.writer = SummaryWriter(log_dir=log_dir)
 
-    def fit(self, train_loader, val_loader, epochs, stage_name="stage"):
+    def fit(self, train_loader, val_loader, epochs, stage_name="stage", scheduler=None):
         for epoch in range(1, epochs + 1):
             start = time.time()
 
@@ -140,6 +140,9 @@ class Trainer:
                     os.path.join(self.checkpoint_dir, "best.pt"),
                 )
                 print(f"  -> new best val_acc={self.best_acc:.4f}, saved best.pt")
+
+            if scheduler is not None:
+                scheduler.step()
 
     def close(self):
         self.writer.close()
