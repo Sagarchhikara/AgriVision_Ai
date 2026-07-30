@@ -23,3 +23,15 @@ model:
 output:
   checkpoint_dir: outputs/checkpoints
   log_dir: outputs/logs
+
+backend:
+  checkpoint_path: outputs/checkpoints/best.pt
+  top_k: 3
+  confidence_threshold: 0.0
+  host: 0.0.0.0
+  port: 8000
+  log_level: INFO
+  log_file: outputs/logs/backend.log
+  cors_origins:
+    - "*"
+  device: auto

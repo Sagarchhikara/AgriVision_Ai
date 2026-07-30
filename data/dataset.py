@@ -40,7 +40,12 @@ class CropDiseaseDataset(ImageFolder):
                 f"Dataset split directory not found: {root}. "
                 f"Did you run the dataset split script first?"
             )
-        super().__init__(root=root, transform=transform)
+        try:
+            super().__init__(root=root, transform=transform, allow_empty=True)
+        except TypeError:
+            # Fallback for older torchvision versions that don't take allow_empty
+            super().__init__(root=root, transform=transform)
+
 
     @property
     def num_classes(self) -> int:

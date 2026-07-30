@@ -73,19 +73,22 @@ def run_inference(model, dataloader, device):
 
 
 def plot_confusion_matrix(labels, preds, class_names, output_path):
-    cm = confusion_matrix(labels, preds)
+    all_labels = list(range(len(class_names)))
+    cm = confusion_matrix(labels, preds, labels=all_labels)
     plt.figure(figsize=(max(10, len(class_names) * 0.5), max(8, len(class_names) * 0.5)))
     sns.heatmap(cm, annot=len(class_names) <= 20, fmt="d", cmap="Blues",
                 xticklabels=class_names, yticklabels=class_names)
     plt.xlabel("Predicted")
     plt.ylabel("True")
-    plt.title("Confusion Matrix (Test Set)")
+    plt.title("Confusion Matrix")
     plt.xticks(rotation=90)
     plt.yticks(rotation=0)
     plt.tight_layout()
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.savefig(output_path, dpi=150)
+    plt.close()
     print(f"Confusion matrix saved to {output_path}")
+
 
 
 def save_misclassified(preds, labels, confs, filepaths, class_names, output_path):
@@ -109,22 +112,38 @@ def save_misclassified(preds, labels, confs, filepaths, class_names, output_path
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--checkpoint", default="outputs/checkpoints/best.pt")
-    parser.add_argument("--config", default="configs/config.yaml")
-    parser.add_argument("--output_dir", default="outputs/predictions")
+    parser.add_argument("--checkpoint", default="outputs/checkpoints/best.pt", help="Path to model checkpoint")
+    parser.add_argument("--config", default="configs/config.yaml", help="Path to config.yaml")
+    parser.add_argument("--dataset_root", default=None, help="Path to dataset root (e.g. datasets/ or datasets/PlantDoc)")
+    parser.add_argument("--split", default="test", help="Dataset split to evaluate on (default: test)")
+    parser.add_argument("--output_dir", default=None, help="Output directory for predictions and metrics")
     args = parser.parse_args()
 
     config = yaml.safe_load(open(args.config))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # Build test dataset/loader directly (not via build_dataloaders_from_config)
-    # since we only need the test split here, not train/val too.
+    # Determine dataset root & output directory
+    dataset_root = args.dataset_root or config["dataset"]["root"]
+    split = args.split
+
+    if args.output_dir:
+        output_dir = args.output_dir
+    elif "PlantDoc" in str(dataset_root):
+        output_dir = "outputs/predictions_plantdoc"
+    else:
+        output_dir = "outputs/predictions"
+
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Evaluating dataset root: {dataset_root} [split: {split}]")
+    print(f"Saving outputs to: {output_dir}")
+
+    # Build test dataset/loader
     image_size = config["training"]["image_size"]
     test_transform = get_transforms("test", image_size=image_size)
-    test_dataset = build_dataset(config["dataset"]["root"], "test", transform=test_transform)
+    test_dataset = build_dataset(dataset_root, split, transform=test_transform)
     test_loader = build_dataloader(
-        test_dataset, split="test",
+        test_dataset, split=split,
         batch_size=config["training"]["batch_size"],
         num_workers=config.get("dataset", {}).get("num_workers", 4),
         pin_memory=(device.type == "cuda"),
@@ -135,23 +154,26 @@ def main():
     model = build_model(config, num_classes=len(class_names)).to(device)
     model = load_checkpoint(model, args.checkpoint, device)
 
+
     preds, labels, confs, filepaths = run_inference(model, test_loader, device)
 
-    print("\n=== Classification Report (Test Set) ===")
-    report = classification_report(labels, preds, target_names=class_names, zero_division=0)
+    all_labels = list(range(len(class_names)))
+    report = classification_report(labels, preds, labels=all_labels, target_names=class_names, zero_division=0)
     print(report)
 
-    with open(os.path.join(args.output_dir, "classification_report.txt"), "w") as f:
+
+    with open(os.path.join(output_dir, "classification_report.txt"), "w") as f:
         f.write(report)
 
     plot_confusion_matrix(
         labels, preds, class_names,
-        os.path.join(args.output_dir, "confusion_matrix.png"),
+        os.path.join(output_dir, "confusion_matrix.png"),
     )
     save_misclassified(
         preds, labels, confs, filepaths, class_names,
-        os.path.join(args.output_dir, "misclassified.csv"),
+        os.path.join(output_dir, "misclassified.csv"),
     )
+
 
     test_acc = sum(p == l for p, l in zip(preds, labels)) / len(labels)
     print(f"\nFinal TEST accuracy: {test_acc:.4f}")
