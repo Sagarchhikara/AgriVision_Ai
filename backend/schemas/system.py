@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class RootResponse(BaseModel):
     """Response body for GET /."""
 
-    message: str = Field(..., description="Static confirmation that the backend process is up.")
+    message: str  = Field(..., description="Static confirmation that the backend process is up.")
 
     model_config = ConfigDict(json_schema_extra={"example": {"message": "AgriVision_Ai backend running"}})
 
