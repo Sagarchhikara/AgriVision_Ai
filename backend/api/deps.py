@@ -13,6 +13,7 @@ from fastapi import Request
 
 from backend.services.gradcam_service import GradCAMService
 from backend.services.inference import InferenceService
+from backend.services.report_service import ReportService
 
 
 def get_inference_service(request: Request) -> InferenceService:
@@ -21,3 +22,7 @@ def get_inference_service(request: Request) -> InferenceService:
 
 def get_gradcam_service(request: Request) -> GradCAMService:
     return request.app.state.gradcam_service
+
+
+def get_report_service(request: Request) -> ReportService:
+    return request.app.state.report_service

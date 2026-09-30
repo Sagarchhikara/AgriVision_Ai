@@ -19,18 +19,23 @@ from __future__ import annotations
 import time
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.api import predict as predict_routes
+from backend.api import report as report_routes
 from backend.api import system as system_routes
 from backend.core.config import get_settings
 from backend.core.logging import get_logger, setup_logging
 from backend.schemas.prediction import ErrorResponse
 from backend.services.gradcam_service import GradCAMService
 from backend.services.inference import InferenceService
+from backend.services.llm import build_provider
+from backend.services.report_cache import build_cache
+from backend.services.report_service import ReportService
 from backend.utils.exceptions import AgriVisionError, ImageValidationError
 
 logger = get_logger(__name__)
@@ -47,12 +52,30 @@ async def lifespan(app: FastAPI):
     inference_service = InferenceService(settings)
     gradcam_service = GradCAMService(inference_service)
 
+    # One AsyncClient for the process, like the model: connection pooling is the
+    # whole point, and a per-request client would throw the pool away each time.
+    # build_provider raises here if a real provider is selected without an API
+    # key, so a misconfigured deployment fails at startup, not mid-request.
+    llm_client = httpx.AsyncClient()
+    report_service = ReportService(
+        settings=settings,
+        provider=build_provider(settings, llm_client),
+        cache=build_cache(
+            enabled=settings.llm_cache_enabled,
+            ttl_seconds=settings.llm_cache_ttl_seconds,
+            max_entries=settings.llm_cache_max_entries,
+        ),
+    )
+
     app.state.settings = settings
     app.state.inference_service = inference_service
     app.state.gradcam_service = gradcam_service
+    app.state.report_service = report_service
 
     logger.info("Startup complete in %.1fms", (time.perf_counter() - start) * 1000)
     yield
+
+    await llm_client.aclose()
     logger.info("Shutting down %s", settings.app_name)
 
 
@@ -78,7 +101,7 @@ def _register_exception_handlers(app: FastAPI) -> None:
     async def handle_agrivision_error(request: Request, exc: AgriVisionError) -> JSONResponse:
         logger.error("Backend error [%s]: %s", exc.error_code, exc, exc_info=True)
         return JSONResponse(
-            status_code=500,
+            status_code=exc.status_code,
             content=ErrorResponse(error=exc.error_code, detail=str(exc)).model_dump(),
         )
 
@@ -129,6 +152,7 @@ def create_app() -> FastAPI:
 
     app.include_router(system_routes.router)
     app.include_router(predict_routes.router)
+    app.include_router(report_routes.router)
 
     return app
 

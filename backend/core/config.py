@@ -24,12 +24,14 @@ once per process and the same Settings instance is reused everywhere
 
 from __future__ import annotations
 
+import logging
 import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
 import yaml
+from dotenv import load_dotenv
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -37,6 +39,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "configs" / "config.yaml"
 
 _ENV_PREFIX = "AGRIVISION_"
+
+# Load .env into the real environment before anything reads it. This has to
+# happen here rather than via pydantic-settings' env_file, because provider API
+# keys are read straight from os.environ in the LLM factory and would never
+# reach a Settings field. override=False keeps a real exported variable winning
+# over the file, which is what you want when overriding a key at deploy time.
+for _env_file in (PROJECT_ROOT / ".env", PROJECT_ROOT / "backend" / ".env"):
+    load_dotenv(_env_file, override=False)
 
 
 def _load_yaml(path: Path) -> dict:
@@ -80,6 +90,22 @@ class Settings(BaseSettings):
     # -- Logging --
     log_level: str = "INFO"
     log_file: Path = PROJECT_ROOT / "outputs" / "logs" / "backend.log"
+
+    # -- LLM report layer --
+    # Defaults to the 'fake' provider so the backend runs with no API keys at
+    # all; selecting gemini/openai is a deliberate act that then requires a key.
+    llm_enabled: bool = True
+    llm_provider: Literal["fake", "gemini", "openai"] = "fake"
+    llm_model: str = "gemini-2.0-flash"
+    llm_timeout_seconds: float = 30.0
+    llm_max_output_tokens: int = 1200
+    llm_temperature: float = 0.3
+    llm_confidence_threshold: float = Field(0.60, ge=0.0, le=1.0)
+    llm_default_language: str = "en"
+    llm_cache_enabled: bool = True
+    llm_cache_ttl_seconds: int = 86400
+    llm_cache_max_entries: int = 512
+    llm_confidence_bucket_size: int = Field(10, ge=1, le=100)
 
     @field_validator("checkpoint_path", "dataset_root", "log_file", mode="before")
     @classmethod
@@ -137,6 +163,37 @@ class Settings(BaseSettings):
         ):
             if key in backend_section:
                 maybe_set(key, backend_section[key])
+
+        llm_section = raw.get("llm", {})
+        if "api_key" in llm_section:
+            # Deliberately ignored: a key committed to YAML is a key committed to
+            # git. Uses the stdlib logger directly rather than core.logging's
+            # get_logger(), which would configure logging before app startup gets
+            # the chance to attach the file handler.
+            logging.getLogger("agrivision.config").warning(
+                "Ignoring 'llm.api_key' in %s -- API keys are read from the "
+                "environment only (GEMINI_API_KEY / OPENAI_API_KEY / %sLLM_API_KEY).",
+                config_path, _ENV_PREFIX,
+            )
+        for key in (
+            "enabled",
+            "provider",
+            "model",
+            "timeout_seconds",
+            "max_output_tokens",
+            "temperature",
+            "confidence_threshold",
+            "default_language",
+        ):
+            if key in llm_section:
+                maybe_set(f"llm_{key}", llm_section[key])
+
+        cache_section = llm_section.get("cache", {})
+        for key in ("enabled", "ttl_seconds", "max_entries"):
+            if key in cache_section:
+                maybe_set(f"llm_cache_{key}", cache_section[key])
+        if "confidence_bucket_size" in cache_section:
+            maybe_set("llm_confidence_bucket_size", cache_section["confidence_bucket_size"])
 
         return cls(**overrides)
 

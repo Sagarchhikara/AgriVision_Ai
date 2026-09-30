@@ -24,6 +24,28 @@ output:
   checkpoint_dir: outputs/checkpoints
   log_dir: outputs/logs
 
+llm:
+  enabled: true
+  provider: fake            # fake | gemini | openai
+  # Verified working and fast (~2.5s per report). gemini-3.8-flash is stronger but
+  # was returning 503 "high demand" on the free tier; switch when capacity allows.
+  model: gemini-3.5-flash-lite
+  timeout_seconds: 30
+  max_output_tokens: 1200
+  temperature: 0.3
+  # Below this top-1 confidence, reports are generated in non-definitive mode.
+  # The classifier scores ~96% on lab photos but ~22% on real field photos, so a
+  # confident-sounding report on a low-confidence prediction is harmful advice.
+  confidence_threshold: 0.60
+  default_language: en
+  # API keys are NEVER read from this file. Set GEMINI_API_KEY / OPENAI_API_KEY
+  # (or AGRIVISION_LLM_API_KEY) in the environment instead.
+  cache:
+    enabled: true
+    ttl_seconds: 86400
+    max_entries: 512
+    confidence_bucket_size: 10
+
 backend:
   checkpoint_path: outputs/checkpoints/best.pt
   top_k: 3
