@@ -20,10 +20,32 @@ class AgriVisionError(Exception):
 
 
 class ImageValidationError(AgriVisionError):
-    """Raised for empty, oversized, corrupt, or unsupported-format uploads."""
+    """Raised for empty or corrupt uploads; subclassed for the cases a client
+    should be able to tell apart without parsing the message."""
 
     error_code = "invalid_image"
     status_code = 400
+
+
+class ImageTooLargeError(ImageValidationError):
+    """Raised when an upload exceeds the configured size limit."""
+
+    error_code = "image_too_large"
+    status_code = 413
+
+
+class UnsupportedImageTypeError(ImageValidationError):
+    """Raised when an upload is not one of the accepted image formats."""
+
+    error_code = "unsupported_image_type"
+    status_code = 415
+
+
+class InvalidFeedbackError(AgriVisionError):
+    """Raised when feedback names a class the model does not know."""
+
+    error_code = "invalid_feedback"
+    status_code = 422
 
 
 class InferenceError(AgriVisionError):

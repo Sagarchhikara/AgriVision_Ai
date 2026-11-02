@@ -23,10 +23,10 @@ from backend.api.deps import get_gradcam_service, get_inference_service, get_rep
 from backend.core.config import Settings, get_settings
 from backend.core.logging import get_logger
 from backend.schemas.prediction import ClassPrediction, ErrorResponse
-from backend.schemas.report import PredictWithReportResponse, ReportRequest
+from backend.schemas.report import PredictWithReportResponse, ReportRequest, SupportedLanguage
 from backend.services.gradcam_service import GradCAMService
 from backend.services.inference import InferenceService
-from backend.services.preprocessing import decode_image
+from backend.services.preprocessing import decode_image, read_upload
 from backend.services.report_service import ReportService
 from backend.utils.exceptions import ReportError
 
@@ -42,7 +42,10 @@ router = APIRouter(tags=["prediction"])
     # exactly the body it did before the report layer existed.
     response_model_exclude_none=True,
     responses={
-        400: {"model": ErrorResponse, "description": "Invalid, corrupt, empty, or oversized image."},
+        400: {"model": ErrorResponse, "description": "Corrupt or empty image."},
+        413: {"model": ErrorResponse, "description": "Image exceeds the upload size limit."},
+        415: {"model": ErrorResponse, "description": "Not an accepted image type (JPEG, PNG, WebP)."},
+        422: {"model": ErrorResponse, "description": "Invalid query parameters, e.g. an unsupported language."},
         500: {"model": ErrorResponse, "description": "Model or Grad-CAM inference failure."},
     },
     summary="Diagnose a crop disease from a leaf image",
@@ -57,12 +60,12 @@ router = APIRouter(tags=["prediction"])
     ),
 )
 async def predict(
-    image: UploadFile = File(..., description="Leaf image file (JPEG, PNG, etc.), max 10MB."),
+    image: UploadFile = File(..., description="Leaf image file (JPEG, PNG, or WebP), max 10MB by default."),
     include_report: bool = Query(
         False, description="Also generate the farmer-friendly report for this prediction."
     ),
-    language: str | None = Query(
-        None, description="Report language code, e.g. 'en'. Ignored unless include_report is true."
+    language: SupportedLanguage | None = Query(
+        None, description="Report language code. Ignored unless include_report is true."
     ),
     inference_service: InferenceService = Depends(get_inference_service),
     gradcam_service: GradCAMService = Depends(get_gradcam_service),
@@ -71,8 +74,8 @@ async def predict(
 ) -> PredictWithReportResponse:
     start = time.perf_counter()
 
-    file_bytes = await image.read()
-    pil_image = decode_image(file_bytes)
+    file_bytes = await read_upload(image, settings.max_upload_bytes)
+    pil_image = decode_image(file_bytes, settings.max_upload_bytes)
 
     preprocessor = inference_service.preprocessor
     input_tensor = preprocessor.to_tensor(pil_image)
@@ -123,6 +126,7 @@ async def predict(
     return PredictWithReportResponse(
         prediction=result.class_name,
         confidence=result.confidence,
+        is_low_confidence=settings.is_low_confidence(result.confidence),
         top_predictions=top_predictions,
         heatmap=heatmap,
         processing_time_ms=processing_time_ms,

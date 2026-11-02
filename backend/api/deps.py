@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from fastapi import Request
 
+from backend.services.feedback_store import FeedbackStore
 from backend.services.gradcam_service import GradCAMService
 from backend.services.inference import InferenceService
 from backend.services.report_service import ReportService
@@ -26,3 +27,7 @@ def get_gradcam_service(request: Request) -> GradCAMService:
 
 def get_report_service(request: Request) -> ReportService:
     return request.app.state.report_service
+
+
+def get_feedback_store(request: Request) -> FeedbackStore:
+    return request.app.state.feedback_store

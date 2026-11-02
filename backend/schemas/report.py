@@ -17,10 +17,17 @@ make the two schema modules import each other.
 from __future__ import annotations
 
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.schemas.prediction import ClassPrediction, PredictResponse
+
+
+# Report languages the prompts support. Mirrors report_prompts.LANGUAGE_NAMES
+# (tests/test_languages.py keeps the two in sync); spelled out as a literal so
+# FastAPI rejects anything else with a 422 and the OpenAPI schema lists them.
+SupportedLanguage = Literal["en", "hi", "pa"]
 
 
 class Severity(str, Enum):
@@ -132,8 +139,8 @@ class ReportRequest(BaseModel):
     top_k: list[ClassPrediction] = Field(
         ..., min_length=1, description="Top-K predictions ranked by confidence, descending."
     )
-    language: str | None = Field(
-        None, description="Output language code, e.g. 'en'. Falls back to the configured default."
+    language: SupportedLanguage | None = Field(
+        None, description="Output language code. Falls back to the configured default."
     )
 
     model_config = ConfigDict(

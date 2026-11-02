@@ -2,16 +2,23 @@
 backend/api/system.py
 
 Service-status endpoints: GET / (liveness) and GET /health (readiness, with
-model/device/version info) -- used for uptime checks and load-balancer probes.
+model/device/version info) -- used for uptime checks and load-balancer probes --
+plus GET /meta, the static facts a client needs to build its UI.
 """
 
 from __future__ import annotations
 
+from typing import get_args
+
 import torch
 from fastapi import APIRouter, Depends, Request
 
+from backend.api.deps import get_inference_service
 from backend.core.config import Settings, get_settings
-from backend.schemas.system import HealthResponse, RootResponse
+from backend.schemas.report import SupportedLanguage
+from backend.schemas.system import HealthResponse, MetaResponse, RootResponse
+from backend.services.inference import InferenceService
+from backend.services.preprocessing import ALLOWED_IMAGE_TYPES
 
 router = APIRouter(tags=["system"])
 
@@ -43,4 +50,26 @@ async def health(request: Request, settings: Settings = Depends(get_settings)) -
         device=device,
         cuda_available=torch.cuda.is_available(),
         version=settings.app_version,
+    )
+
+
+@router.get(
+    "/meta",
+    response_model=MetaResponse,
+    summary="Client metadata",
+    description=(
+        "The model's class list, supported report languages, and upload limits, so a "
+        "client can build its UI and validate input without hardcoding any of them."
+    ),
+)
+async def meta(
+    inference_service: InferenceService = Depends(get_inference_service),
+    settings: Settings = Depends(get_settings),
+) -> MetaResponse:
+    return MetaResponse(
+        classes=inference_service.class_names,
+        languages=list(get_args(SupportedLanguage)),
+        default_language=settings.llm_default_language,
+        max_upload_bytes=settings.max_upload_bytes,
+        allowed_image_types=list(ALLOWED_IMAGE_TYPES),
     )

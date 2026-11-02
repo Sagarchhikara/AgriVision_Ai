@@ -25,12 +25,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from backend.api import feedback as feedback_routes
 from backend.api import predict as predict_routes
 from backend.api import report as report_routes
 from backend.api import system as system_routes
-from backend.core.config import get_settings
+from backend.core.config import Settings, get_settings
 from backend.core.logging import get_logger, setup_logging
 from backend.schemas.prediction import ErrorResponse
+from backend.services.feedback_store import FeedbackStore
 from backend.services.gradcam_service import GradCAMService
 from backend.services.inference import InferenceService
 from backend.services.llm import build_provider
@@ -71,6 +73,7 @@ async def lifespan(app: FastAPI):
     app.state.inference_service = inference_service
     app.state.gradcam_service = gradcam_service
     app.state.report_service = report_service
+    app.state.feedback_store = FeedbackStore(settings.feedback_dir, settings.app_version)
 
     logger.info("Startup complete in %.1fms", (time.perf_counter() - start) * 1000)
     yield
@@ -93,7 +96,7 @@ def _register_exception_handlers(app: FastAPI) -> None:
     async def handle_image_validation_error(request: Request, exc: ImageValidationError) -> JSONResponse:
         logger.warning("Invalid image upload: %s", exc)
         return JSONResponse(
-            status_code=400,
+            status_code=exc.status_code,
             content=ErrorResponse(error=exc.error_code, detail=str(exc)).model_dump(),
         )
 
@@ -126,8 +129,13 @@ def _register_exception_handlers(app: FastAPI) -> None:
         )
 
 
-def create_app() -> FastAPI:
-    settings = get_settings()
+def create_app(settings: Settings | None = None) -> FastAPI:
+    """
+    Args:
+        settings: overrides the process-wide settings for app construction
+            (CORS, metadata). Tests use this; servers leave it None.
+    """
+    settings = settings or get_settings()
     setup_logging(settings.log_level, settings.log_file)
 
     app = FastAPI(
@@ -140,12 +148,19 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    if "*" in settings.cors_origins:
+        logger.warning(
+            "CORS allows any origin ('*'). Set AGRIVISION_CORS_ORIGINS to the frontend's "
+            "origin(s) for any deployment reachable from the internet."
+        )
+    # No credentials: the API uses no cookies or auth headers, and refusing them
+    # means even a '*' origin list can't be used to make credentialed requests.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
     )
 
     _register_exception_handlers(app)
@@ -153,6 +168,7 @@ def create_app() -> FastAPI:
     app.include_router(system_routes.router)
     app.include_router(predict_routes.router)
     app.include_router(report_routes.router)
+    app.include_router(feedback_routes.router)
 
     return app
 

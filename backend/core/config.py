@@ -85,7 +85,15 @@ class Settings(BaseSettings):
     # -- Server --
     host: str = "0.0.0.0"
     port: int = 8000
-    cors_origins: list[str] = Field(default_factory=lambda: ["*"])
+    # Set per deployment via AGRIVISION_CORS_ORIGINS as a JSON list, e.g.
+    # '["https://agrivision.example"]'. "*" is accepted but logged as a warning.
+    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+
+    # -- Uploads --
+    max_upload_bytes: int = Field(10 * 1024 * 1024, gt=0)
+
+    # -- Feedback (MVP: JSON lines on local disk, no database) --
+    feedback_dir: Path = PROJECT_ROOT / "outputs" / "feedback"
 
     # -- Logging --
     log_level: str = "INFO"
@@ -107,13 +115,18 @@ class Settings(BaseSettings):
     llm_cache_max_entries: int = 512
     llm_confidence_bucket_size: int = Field(10, ge=1, le=100)
 
-    @field_validator("checkpoint_path", "dataset_root", "log_file", mode="before")
+    @field_validator("checkpoint_path", "dataset_root", "log_file", "feedback_dir", mode="before")
     @classmethod
     def _resolve_relative_to_project_root(cls, value: str | Path) -> Path:
         """configs/config.yaml paths are written relative to the repo root,
         not to whatever directory the server happens to be launched from."""
         path = Path(value)
         return path if path.is_absolute() else PROJECT_ROOT / path
+
+    def is_low_confidence(self, confidence: float) -> bool:
+        """The one rule for "too uncertain to state a diagnosis", shared by
+        /predict's flag and the report layer's hedged-prompt switch."""
+        return confidence < self.llm_confidence_threshold
 
     @staticmethod
     def _env_override_present(field_name: str) -> bool:
@@ -158,6 +171,8 @@ class Settings(BaseSettings):
             "host",
             "port",
             "cors_origins",
+            "max_upload_bytes",
+            "feedback_dir",
             "log_level",
             "log_file",
         ):
