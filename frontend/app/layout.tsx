@@ -1,15 +1,12 @@
 import type { Metadata, Viewport } from "next";
 
-import { I18nProvider } from "@/components/i18n-provider";
-import { SiteHeader } from "@/components/site-header";
-import { DEFAULT_LOCALE } from "@/lib/i18n/config";
+import { LocaleHtml } from "@/components/locale-html";
 import { AnalysisProvider } from "@/state/analysis-context";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "AgriVision", template: "%s · AgriVision" },
-  description: "Check a crop leaf photo for signs of disease.",
 };
 
 export const viewport: Viewport = {
@@ -20,15 +17,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang={DEFAULT_LOCALE}>
+    <LocaleHtml>
       <body className="min-h-dvh">
-        <I18nProvider locale={DEFAULT_LOCALE}>
-          <AnalysisProvider>
-            <SiteHeader />
-            <main className="mx-auto w-full max-w-xl px-4 pt-6 pb-12">{children}</main>
-          </AnalysisProvider>
-        </I18nProvider>
+        <AnalysisProvider>{children}</AnalysisProvider>
       </body>
-    </html>
+    </LocaleHtml>
   );
 }

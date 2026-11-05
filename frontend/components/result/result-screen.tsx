@@ -3,7 +3,7 @@
 import { Camera, CircleHelp, ImageOff, ScanSearch } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition } from "react";
+import { startTransition, useEffect, useRef } from "react";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Disclaimer } from "@/components/result/disclaimer";
@@ -27,17 +27,23 @@ export function ResultScreen() {
 }
 
 function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: PredictResponse }) {
-  const { t, locale } = useI18n();
+  const { t, locale, href } = useI18n();
   const router = useRouter();
   const { setPhoto } = useAnalysis();
   const { state: reportState, retry } = useReport(prediction, locale);
+  const heading = useRef<HTMLHeadingElement>(null);
+
+  // Moves screen readers and keyboards to the result, which a client-side
+  // navigation otherwise leaves them behind. preventScroll keeps the disclaimer
+  // above the heading on screen.
+  useEffect(() => heading.current?.focus({ preventScroll: true }), []);
 
   // Clearing and navigating in one transition commits them together, so this
   // page never flashes its empty state on the way out.
   const startOver = () =>
     startTransition(() => {
       setPhoto(null);
-      router.push("/");
+      router.push(href("/"));
     });
 
   // Either flag is enough. They share one rule, but a cached report is keyed by
@@ -60,7 +66,11 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
       {uncertain ? (
         <>
           <header>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+            <h1
+              ref={heading}
+              tabIndex={-1}
+              className="flex items-center gap-2 text-2xl font-semibold outline-none"
+            >
               <CircleHelp aria-hidden className="size-7 shrink-0 text-warning-foreground" />
               {t.result.uncertainTitle}
             </h1>
@@ -83,7 +93,9 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
         <>
           <header>
             <p className="font-medium text-muted-foreground">{t.result.likelyEyebrow}</p>
-            <h1 className="text-3xl font-semibold tracking-tight">{top.condition}</h1>
+            <h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold outline-none">
+              {top.condition}
+            </h1>
             {top.crop && <p className="text-lg text-muted-foreground">{top.crop}</p>}
             <p className="mt-3">
               {t.result.confidenceLine}{" "}
@@ -110,14 +122,14 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
 }
 
 function EmptyResult() {
-  const { t } = useI18n();
+  const { t, href } = useI18n();
   return (
     <div className="flex flex-col items-center gap-4 py-12 text-center">
       <ImageOff aria-hidden className="size-12 text-muted-foreground" />
       <h1 className="text-2xl font-semibold">{t.result.emptyTitle}</h1>
       <p className="text-muted-foreground">{t.result.emptyBody}</p>
       <Button asChild size="lg">
-        <Link href="/">{t.result.emptyAction}</Link>
+        <Link href={href("/")}>{t.result.emptyAction}</Link>
       </Button>
     </div>
   );

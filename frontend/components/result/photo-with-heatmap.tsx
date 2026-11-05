@@ -35,7 +35,11 @@ export function PhotoWithHeatmap({ photoUrl, heatmap }: { photoUrl: string; heat
           className="object-cover"
         />
       </div>
-      <div className="mx-auto grid w-full max-w-sm grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+      <div
+        role="group"
+        aria-label={t.result.viewToggle}
+        className="mx-auto grid w-full max-w-sm grid-cols-2 gap-1 rounded-lg bg-muted p-1"
+      >
         {options.map(({ focus, label }) => (
           <button
             key={label}

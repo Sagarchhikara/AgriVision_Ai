@@ -10,10 +10,10 @@ import { useClassList } from "@/hooks/use-class-list";
 import { submitFeedback, type FeedbackVerdict, type PredictResponse } from "@/lib/api";
 import { groupByCrop } from "@/lib/classes";
 import { errorCodeOf, type AppErrorCode } from "@/lib/errors";
+import { useAnalysis } from "@/state/analysis-context";
 import { cn } from "cn";
 
-type Status =
-  { kind: "idle" } | { kind: "sending" } | { kind: "sent" } | { kind: "error"; code: AppErrorCode };
+type Status = { kind: "idle" } | { kind: "sending" } | { kind: "error"; code: AppErrorCode };
 
 export function FeedbackForm({
   prediction,
@@ -23,6 +23,7 @@ export function FeedbackForm({
   uncertain: boolean;
 }) {
   const { t, locale } = useI18n();
+  const { feedbackSent: sent, markFeedbackSent } = useAnalysis();
   const classes = useClassList();
   const [verdict, setVerdict] = useState<FeedbackVerdict | null>(null);
   const [correctClass, setCorrectClass] = useState("");
@@ -55,7 +56,7 @@ export function FeedbackForm({
         },
         { signal: controller.signal },
       );
-      setStatus({ kind: "sent" });
+      markFeedbackSent();
     } catch (error) {
       if (!controller.signal.aborted) setStatus({ kind: "error", code: errorCodeOf(error) });
     }
@@ -67,7 +68,6 @@ export function FeedbackForm({
   };
 
   const sending = status.kind === "sending";
-  const sent = status.kind === "sent";
 
   return (
     <section aria-labelledby="feedback-heading" className="rounded-xl border bg-card p-4">

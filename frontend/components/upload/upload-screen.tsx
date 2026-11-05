@@ -19,7 +19,7 @@ import { useAnalysis } from "@/state/analysis-context";
 type Busy = "preparing" | "analyzing" | null;
 
 export function UploadScreen() {
-  const { t } = useI18n();
+  const { t, href } = useI18n();
   const router = useRouter();
   const { photo, setPhoto, setPrediction } = useAnalysis();
   const [busy, setBusy] = useState<Busy>(null);
@@ -50,7 +50,7 @@ export function UploadScreen() {
     setBusy("analyzing");
     try {
       setPrediction(await predict(photo.blob, { signal: controller.signal }));
-      router.push("/result");
+      router.push(href("/result"));
     } catch (caught) {
       if (controller.signal.aborted) return;
       setError({ code: errorCodeOf(caught), retry: analyze });
@@ -61,7 +61,7 @@ export function UploadScreen() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t.upload.title}</h1>
+        <h1 className="text-2xl font-semibold">{t.upload.title}</h1>
         <p className="mt-1 text-muted-foreground">{t.upload.intro}</p>
       </div>
 

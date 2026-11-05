@@ -43,3 +43,18 @@ Add more with `npx shadcn@latest add <name>`. Do not `@import "shadcn/tailwind.c
 with `@tailwindcss/turbopack` it silently drops the rest of `globals.css` (see
 `app/shadcn-variants.css`). If an added component needs a variant that is not in
 that file, copy it in. After `shadcn add`, check the build still contains the theme.
+
+## Languages
+
+English, Hindi, and Punjabi, under `/en`, `/hi`, and `/pa`. `proxy.ts` sends a path
+without a locale to the saved choice (`NEXT_LOCALE` cookie) or the browser's language.
+
+- Strings live in `lib/i18n/dictionaries/`. `en.ts` is the reference; the others are
+  typed as `Dictionary`, so a missing key fails the build.
+- **`hi.ts` and `pa.ts` are unreviewed drafts.** A native speaker with agronomy
+  knowledge must check them, especially disease names, before they reach farmers.
+- The locale is also sent to `/report` as `language`. The fake LLM provider always
+  answers in English, so translated reports need a real provider.
+- The analysis state sits in the root layout, above `[locale]`, so that switching
+  language keeps the photo. Keep it there: anything under `[locale]` remounts on a
+  switch, and `<html lang>` is set by `components/locale-html.tsx` for the same reason.
