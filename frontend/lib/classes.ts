@@ -61,6 +61,27 @@ function humanize(part: string): string {
   return part.replace(/_/g, " ").replace(/\s+/g, " ").trim();
 }
 
+export interface CropGroup {
+  crop: string;
+  options: { className: string; condition: string }[];
+}
+
+/** Classes grouped by crop and sorted for a dropdown, in the current language. */
+export function groupByCrop(classNames: string[], t: Dictionary, locale: string): CropGroup[] {
+  const groups = new Map<string, CropGroup>();
+  for (const className of classNames) {
+    const { crop, condition } = classLabel(className, t);
+    const group = groups.get(crop) ?? { crop, options: [] };
+    group.options.push({ className, condition });
+    groups.set(crop, group);
+  }
+  const compare = new Intl.Collator(locale).compare;
+  for (const group of groups.values()) {
+    group.options.sort((a, b) => compare(a.condition, b.condition));
+  }
+  return [...groups.values()].sort((a, b) => compare(a.crop, b.crop));
+}
+
 export function classLabel(className: string, t: Dictionary): ClassLabel {
   const healthy = className.toLowerCase().endsWith(`${SEPARATOR}healthy`);
   if (isKnownClass(className)) {

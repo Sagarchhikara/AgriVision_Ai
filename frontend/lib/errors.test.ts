@@ -20,6 +20,11 @@ describe("errorCodeOf", () => {
 });
 
 describe("errorMessage", () => {
+  it("does not invite a retry when reports are switched off", () => {
+    expect(errorMessage("report_disabled", en).body).not.toContain("again");
+    expect(errorMessage("llm_timeout", en).body).toContain("again");
+  });
+
   it("gives the same message for server- and client-detected oversize photos", () => {
     expect(errorMessage("image_too_large", en)).toBe(errorMessage("file_too_large", en));
   });

@@ -103,6 +103,41 @@ export const en = {
     emptyBody: "Take or choose a photo of a leaf to get a suggestion.",
     emptyAction: "Check a leaf",
   },
+  report: {
+    heading: "Advice",
+    loading: "Preparing advice. This can take a few seconds…",
+    summary: "What may be happening",
+    urgency: "How urgent, if this is correct",
+    urgencyLevels: { low: "Low", medium: "Medium", high: "High" },
+    symptoms: "Check these signs on your plant first",
+    symptomsUncertain: "Signs that can tell these apart",
+    symptomsHealthy: "Signs to watch for",
+    ifConfirmed: "If your officer confirms this",
+    organic: "Steps without chemicals",
+    organicUncertain: "Safe steps for now",
+    chemical: "Chemical treatment",
+    chemicalNote:
+      "Speak to your local agricultural extension officer before using any chemical. They can tell you what to use and how much.",
+    chemicalUncertain:
+      "Do not use any chemical spray yet. The problem is not confirmed, and the wrong spray can harm your crop.",
+    prevention: "Prevention",
+    preventionHealthy: "Keeping your crop healthy",
+    consultExpert: "When to ask an expert",
+    confidenceNote: "How sure is this?",
+  },
+  feedback: {
+    title: "Was this correct?",
+    titleUncertain: "Was the first match correct?",
+    intro: "Your answer helps us improve. Your photo is not saved.",
+    yes: "Yes",
+    no: "No",
+    notSure: "Not sure",
+    correctClassLabel: "Do you know what it really is? (optional)",
+    correctClassNone: "I don't know",
+    submit: "Send answer",
+    sending: "Sending…",
+    thanks: "Thank you. Your answer was saved.",
+  },
   errors: {
     tryAgain: "Try again",
     network: {
@@ -136,6 +171,10 @@ export const en = {
     reportUnavailable: {
       title: "Advice is not available right now",
       body: "The result above is still shown. You can try loading the advice again.",
+    },
+    reportDisabled: {
+      title: "Advice is not available",
+      body: "The result above is still shown. Please ask your local agricultural extension officer for advice.",
     },
     busy: {
       title: "Too many requests",

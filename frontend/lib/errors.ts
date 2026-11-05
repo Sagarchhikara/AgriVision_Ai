@@ -26,7 +26,7 @@ const MESSAGE_KEY: Record<AppErrorCode, MessageKey> = {
   invalid_feedback: "feedbackRejected",
   inference_error: "analysisFailed",
   report_error: "reportUnavailable",
-  report_disabled: "reportUnavailable",
+  report_disabled: "reportDisabled",
   llm_configuration_error: "reportUnavailable",
   llm_provider_error: "reportUnavailable",
   llm_timeout: "reportUnavailable",
