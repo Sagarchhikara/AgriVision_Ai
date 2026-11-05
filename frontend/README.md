@@ -18,6 +18,7 @@ The backend must allow this origin: its default CORS origin is
 | Script                            | Purpose                                                              |
 | --------------------------------- | -------------------------------------------------------------------- |
 | `npm run dev` / `build` / `start` | Next.js                                                              |
+| `npm test`                        | Vitest unit tests (`lib/*.test.ts`)                                  |
 | `npm run lint`                    | ESLint                                                               |
 | `npm run typecheck`               | `tsc --noEmit`                                                       |
 | `npm run format` / `format:check` | Prettier                                                             |
@@ -34,3 +35,11 @@ checkpoint, or the dataset. Activate the repo's virtualenv first, or set
 
 Re-run it after any backend schema change and commit both files; the diff to
 `openapi.json` is the API contract change.
+
+## UI components
+
+`components/ui/` holds shadcn/ui components, restyled for large touch targets.
+Add more with `npx shadcn@latest add <name>`. Do not `@import "shadcn/tailwind.css"`:
+with `@tailwindcss/turbopack` it silently drops the rest of `globals.css` (see
+`app/shadcn-variants.css`). If an added component needs a variant that is not in
+that file, copy it in. After `shadcn add`, check the build still contains the theme.
