@@ -7,20 +7,30 @@ import { startTransition } from "react";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Disclaimer } from "@/components/result/disclaimer";
+import { FeedbackForm } from "@/components/result/feedback-form";
 import { PhotoWithHeatmap } from "@/components/result/photo-with-heatmap";
+import { ReportView, type ReportVariant } from "@/components/result/report-view";
 import { TopPredictions } from "@/components/result/top-predictions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useReport } from "@/hooks/use-report";
+import type { PredictResponse } from "@/lib/api";
 import { classLabel } from "@/lib/classes";
 import { formatPercent } from "@/lib/format";
+import type { PreparedPhoto } from "@/lib/image";
 import { useAnalysis } from "@/state/analysis-context";
 
 export function ResultScreen() {
+  const { photo, prediction } = useAnalysis();
+  if (!photo || !prediction) return <EmptyResult />;
+  return <Result photo={photo} prediction={prediction} />;
+}
+
+function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: PredictResponse }) {
   const { t, locale } = useI18n();
   const router = useRouter();
-  const { photo, prediction, setPhoto } = useAnalysis();
-
-  if (!photo || !prediction) return <EmptyResult />;
+  const { setPhoto } = useAnalysis();
+  const { state: reportState, retry } = useReport(prediction, locale);
 
   // Clearing and navigating in one transition commits them together, so this
   // page never flashes its empty state on the way out.
@@ -30,8 +40,14 @@ export function ResultScreen() {
       router.push("/");
     });
 
-  const uncertain = prediction.is_low_confidence;
+  // Either flag is enough. They share one rule, but a cached report is keyed by
+  // a confidence bucket, so if they ever disagree, stay on the cautious side.
+  const uncertain =
+    prediction.is_low_confidence ||
+    (reportState.status === "ready" && reportState.report.is_low_confidence);
   const top = classLabel(prediction.prediction, t);
+  const variant: ReportVariant = uncertain ? "uncertain" : top.healthy ? "healthy" : "standard";
+
   const photoView = <PhotoWithHeatmap photoUrl={photo.modelViewUrl} heatmap={prediction.heatmap} />;
   const matches = (
     <TopPredictions predictions={prediction.top_predictions} emphasizeFirst={!uncertain} />
@@ -81,6 +97,9 @@ export function ResultScreen() {
           {matches}
         </>
       )}
+
+      <ReportView state={reportState} variant={variant} onRetry={retry} />
+      <FeedbackForm prediction={prediction} uncertain={uncertain} />
 
       <Button size="lg" variant="outline" onClick={startOver}>
         <ScanSearch aria-hidden />

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { BackendStatus } from "@/components/backend-status";
 import { ErrorAlert } from "@/components/error-alert";
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,8 @@ export function UploadScreen() {
         <h1 className="text-2xl font-semibold tracking-tight">{t.upload.title}</h1>
         <p className="mt-1 text-muted-foreground">{t.upload.intro}</p>
       </div>
+
+      <BackendStatus />
 
       {!photo && <PhotoTips />}
 
