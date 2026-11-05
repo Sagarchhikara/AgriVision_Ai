@@ -49,6 +49,14 @@ export const en = {
   app: {
     name: "AgriVision",
     homeLink: "AgriVision home",
+    description: "Check a crop leaf photo for signs of disease.",
+    skipToContent: "Skip to main content",
+    languageLabel: "Choose language",
+  },
+  notFound: {
+    title: "Page not found",
+    body: "This page does not exist.",
+    action: "Check a leaf",
   },
   upload: {
     title: "Check a crop leaf",
@@ -89,6 +97,7 @@ export const en = {
       "The model can be wrong, even when it seems sure, especially on photos taken in the field.",
     healthyCondition: "Healthy",
     photoHeading: "Your photo",
+    viewToggle: "Choose what to show",
     showPhoto: "Photo",
     showFocus: "Model focus",
     focusExplanation: "The highlighted area is what the model focused on.",

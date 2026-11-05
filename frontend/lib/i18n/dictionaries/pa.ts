@@ -1,0 +1,197 @@
+/**
+ * Punjabi (Gurmukhi) UI strings.
+ *
+ * DRAFT: not yet reviewed by a native speaker with agronomy knowledge. Disease
+ * and crop names especially must be checked before this reaches farmers.
+ */
+
+import type { Dictionary } from "@/lib/i18n/dictionaries/en";
+
+export const pa: Dictionary = {
+  app: {
+    name: "AgriVision",
+    homeLink: "AgriVision ਹੋਮ ਪੇਜ",
+    description: "ਫ਼ਸਲ ਦੇ ਪੱਤੇ ਦੀ ਫ਼ੋਟੋ ਤੋਂ ਬਿਮਾਰੀ ਦੇ ਸੰਕੇਤ ਜਾਂਚੋ।",
+    skipToContent: "ਮੁੱਖ ਸਮੱਗਰੀ 'ਤੇ ਜਾਓ",
+    languageLabel: "ਭਾਸ਼ਾ ਚੁਣੋ",
+  },
+  notFound: {
+    title: "ਪੇਜ ਨਹੀਂ ਮਿਲਿਆ",
+    body: "ਇਹ ਪੇਜ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।",
+    action: "ਪੱਤਾ ਜਾਂਚੋ",
+  },
+  upload: {
+    title: "ਫ਼ਸਲ ਦਾ ਪੱਤਾ ਜਾਂਚੋ",
+    intro: "ਇੱਕ ਪ੍ਰਭਾਵਿਤ ਪੱਤੇ ਦੀ ਸਾਫ਼ ਫ਼ੋਟੋ ਲਓ। ਅਸੀਂ ਦੱਸਾਂਗੇ ਕਿ ਸਮੱਸਿਆ ਕੀ ਹੋ ਸਕਦੀ ਹੈ।",
+    takePhoto: "ਫ਼ੋਟੋ ਲਓ",
+    choosePhoto: "ਫ਼ੋਟੋ ਚੁਣੋ",
+    dropHint: "ਜਾਂ ਫ਼ੋਟੋ ਇੱਥੇ ਖਿੱਚ ਕੇ ਲਿਆਓ",
+    dropActive: "ਫ਼ੋਟੋ ਇੱਥੇ ਛੱਡੋ",
+    changePhoto: "ਹੋਰ ਫ਼ੋਟੋ ਲਓ",
+    previewAlt: "ਤੁਹਾਡੇ ਪੱਤੇ ਦੀ ਫ਼ੋਟੋ",
+    analyze: "ਇਹ ਪੱਤਾ ਜਾਂਚੋ",
+    preparing: "ਤੁਹਾਡੀ ਫ਼ੋਟੋ ਤਿਆਰ ਹੋ ਰਹੀ ਹੈ…",
+    analyzing: "ਪੱਤੇ ਦੀ ਜਾਂਚ ਹੋ ਰਹੀ ਹੈ। ਇਸ ਵਿੱਚ ਕੁਝ ਸਕਿੰਟ ਲੱਗ ਸਕਦੇ ਹਨ…",
+  },
+  tips: {
+    title: "ਵਧੀਆ ਨਤੀਜੇ ਲਈ",
+    singleLeaf: "ਸਿਰਫ਼ ਇੱਕ ਪੱਤਾ",
+    closeUp: "ਨੇੜਿਓਂ ਲਓ, ਪੱਤਾ ਪੂਰੀ ਫ਼ੋਟੋ ਵਿੱਚ ਦਿਸੇ",
+    daylight: "ਦਿਨ ਦੀ ਚੰਗੀ ਰੌਸ਼ਨੀ, ਗੂੜ੍ਹੀ ਛਾਂ ਨਹੀਂ",
+    plainBackground: "ਪਿੱਛੇ ਸਾਦੀ ਸਤ੍ਹਾ",
+    inFocus: "ਸਾਫ਼ ਫ਼ੋਟੋ, ਧੁੰਦਲੀ ਨਹੀਂ",
+    centered: "ਪੱਤਾ ਵਿਚਕਾਰ ਹੋਵੇ",
+  },
+  disclaimer: {
+    title: "ਸਿਰਫ਼ AI ਦਾ ਸੁਝਾਅ",
+    body: "ਇਹ ਪੱਕੀ ਜਾਂਚ ਨਹੀਂ ਹੈ। ਫ਼ਸਲ ਦਾ ਇਲਾਜ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਆਪਣੇ ਸਥਾਨਕ ਖੇਤੀਬਾੜੀ ਪਸਾਰ ਅਫ਼ਸਰ ਤੋਂ ਪੁਸ਼ਟੀ ਕਰੋ।",
+  },
+  result: {
+    pageTitle: "ਨਤੀਜਾ",
+    likelyEyebrow: "ਸਭ ਤੋਂ ਵੱਧ ਸੰਭਾਵਨਾ",
+    uncertainTitle: "ਨਤੀਜਾ ਪੱਕਾ ਨਹੀਂ ਹੈ",
+    uncertainBody:
+      "ਇਸ ਫ਼ੋਟੋ ਤੋਂ ਸਾਫ਼ ਜਵਾਬ ਨਹੀਂ ਮਿਲਿਆ। ਮਾਡਲ ਇਨ੍ਹਾਂ ਸੰਭਾਵਨਾਵਾਂ ਵਿੱਚ ਫ਼ਰਕ ਨਹੀਂ ਕਰ ਸਕਿਆ।",
+    betterPhotoTitle: "ਕਿਰਪਾ ਕਰਕੇ ਹੋਰ ਸਾਫ਼ ਫ਼ੋਟੋ ਲਓ",
+    betterPhotoBody: "ਫ਼ੋਟੋ ਦੇ ਸੁਝਾਅ ਅਪਣਾਓ: ਇੱਕ ਪੱਤਾ, ਨੇੜਿਓਂ, ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਵਿੱਚ, ਸਾਫ਼ ਫ਼ੋਟੋ।",
+    confidenceLine: "ਮਾਡਲ ਦਾ ਭਰੋਸਾ:",
+    canBeWrong:
+      "ਮਾਡਲ ਗ਼ਲਤ ਹੋ ਸਕਦਾ ਹੈ, ਭਾਵੇਂ ਉਹ ਪੱਕਾ ਲੱਗੇ। ਖੇਤ ਵਿੱਚ ਲਈ ਫ਼ੋਟੋ 'ਤੇ ਅਜਿਹਾ ਜ਼ਿਆਦਾ ਹੁੰਦਾ ਹੈ।",
+    healthyCondition: "ਸਿਹਤਮੰਦ",
+    photoHeading: "ਤੁਹਾਡੀ ਫ਼ੋਟੋ",
+    viewToggle: "ਚੁਣੋ ਕਿ ਕੀ ਦਿਖਾਉਣਾ ਹੈ",
+    showPhoto: "ਫ਼ੋਟੋ",
+    showFocus: "ਮਾਡਲ ਦਾ ਧਿਆਨ",
+    focusExplanation: "ਨਿਸ਼ਾਨਬੱਧ ਹਿੱਸੇ 'ਤੇ ਮਾਡਲ ਨੇ ਸਭ ਤੋਂ ਵੱਧ ਧਿਆਨ ਦਿੱਤਾ।",
+    photoAlt: "ਤੁਹਾਡੀ ਫ਼ੋਟੋ ਦਾ ਉਹ ਹਿੱਸਾ ਜੋ ਮਾਡਲ ਨੇ ਜਾਂਚਿਆ",
+    focusAlt: "ਤੁਹਾਡੀ ਫ਼ੋਟੋ, ਜਿਸ ਵਿੱਚ ਮਾਡਲ ਦੇ ਧਿਆਨ ਵਾਲੇ ਹਿੱਸੇ ਨਿਸ਼ਾਨਬੱਧ ਹਨ",
+    centreNote: "ਫ਼ੋਟੋ ਦਾ ਸਿਰਫ਼ ਵਿਚਕਾਰਲਾ ਹਿੱਸਾ ਜਾਂਚਿਆ ਜਾਂਦਾ ਹੈ, ਇਸ ਲਈ ਪੱਤਾ ਵਿਚਕਾਰ ਰੱਖੋ।",
+    possibleMatches: "ਸੰਭਾਵੀ ਮੇਲ",
+    possibleMatchesNote:
+      "ਪ੍ਰਤੀਸ਼ਤ ਦੱਸਦੇ ਹਨ ਕਿ ਮਾਡਲ ਨੂੰ ਕਿੰਨਾ ਭਰੋਸਾ ਹੈ, ਇਹ ਨਹੀਂ ਕਿ ਪੌਦਾ ਕਿੰਨਾ ਬਿਮਾਰ ਹੈ।",
+    analyzeAnother: "ਹੋਰ ਫ਼ੋਟੋ ਜਾਂਚੋ",
+    tryAnotherPhoto: "ਹੋਰ ਸਾਫ਼ ਫ਼ੋਟੋ ਲਓ",
+    emptyTitle: "ਅਜੇ ਕੋਈ ਫ਼ੋਟੋ ਨਹੀਂ ਜਾਂਚੀ ਗਈ",
+    emptyBody: "ਸੁਝਾਅ ਲੈਣ ਲਈ ਪੱਤੇ ਦੀ ਫ਼ੋਟੋ ਲਓ ਜਾਂ ਚੁਣੋ।",
+    emptyAction: "ਪੱਤਾ ਜਾਂਚੋ",
+  },
+  report: {
+    heading: "ਸਲਾਹ",
+    loading: "ਸਲਾਹ ਤਿਆਰ ਹੋ ਰਹੀ ਹੈ। ਇਸ ਵਿੱਚ ਕੁਝ ਸਕਿੰਟ ਲੱਗ ਸਕਦੇ ਹਨ…",
+    summary: "ਕੀ ਹੋ ਸਕਦਾ ਹੈ",
+    urgency: "ਜੇ ਇਹ ਸਹੀ ਹੈ ਤਾਂ ਕਿੰਨਾ ਜ਼ਰੂਰੀ ਹੈ",
+    urgencyLevels: { low: "ਘੱਟ", medium: "ਦਰਮਿਆਨਾ", high: "ਜ਼ਿਆਦਾ" },
+    symptoms: "ਪਹਿਲਾਂ ਆਪਣੇ ਪੌਦੇ 'ਤੇ ਇਹ ਲੱਛਣ ਦੇਖੋ",
+    symptomsUncertain: "ਇਨ੍ਹਾਂ ਵਿੱਚ ਫ਼ਰਕ ਦੱਸਣ ਵਾਲੇ ਲੱਛਣ",
+    symptomsHealthy: "ਇਨ੍ਹਾਂ ਲੱਛਣਾਂ 'ਤੇ ਨਜ਼ਰ ਰੱਖੋ",
+    ifConfirmed: "ਜੇ ਤੁਹਾਡਾ ਅਫ਼ਸਰ ਇਸ ਦੀ ਪੁਸ਼ਟੀ ਕਰੇ",
+    organic: "ਬਿਨਾਂ ਰਸਾਇਣ ਦੇ ਉਪਾਅ",
+    organicUncertain: "ਹੁਣ ਲਈ ਸੁਰੱਖਿਅਤ ਉਪਾਅ",
+    chemical: "ਰਸਾਇਣਕ ਇਲਾਜ",
+    chemicalNote:
+      "ਕੋਈ ਵੀ ਰਸਾਇਣ ਵਰਤਣ ਤੋਂ ਪਹਿਲਾਂ ਆਪਣੇ ਸਥਾਨਕ ਖੇਤੀਬਾੜੀ ਪਸਾਰ ਅਫ਼ਸਰ ਨਾਲ ਗੱਲ ਕਰੋ। ਉਹ ਦੱਸਣਗੇ ਕਿ ਕੀ ਅਤੇ ਕਿੰਨਾ ਵਰਤਣਾ ਹੈ।",
+    chemicalUncertain:
+      "ਅਜੇ ਕੋਈ ਰਸਾਇਣਕ ਛਿੜਕਾਅ ਨਾ ਕਰੋ। ਸਮੱਸਿਆ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੋਈ, ਅਤੇ ਗ਼ਲਤ ਛਿੜਕਾਅ ਨਾਲ ਫ਼ਸਲ ਨੂੰ ਨੁਕਸਾਨ ਹੋ ਸਕਦਾ ਹੈ।",
+    prevention: "ਬਚਾਅ",
+    preventionHealthy: "ਫ਼ਸਲ ਨੂੰ ਸਿਹਤਮੰਦ ਰੱਖਣ ਦੇ ਉਪਾਅ",
+    consultExpert: "ਮਾਹਿਰ ਤੋਂ ਕਦੋਂ ਪੁੱਛਣਾ ਹੈ",
+    confidenceNote: "ਇਹ ਕਿੰਨਾ ਪੱਕਾ ਹੈ?",
+  },
+  feedback: {
+    title: "ਕੀ ਇਹ ਸਹੀ ਸੀ?",
+    titleUncertain: "ਕੀ ਪਹਿਲਾ ਮੇਲ ਸਹੀ ਸੀ?",
+    intro: "ਤੁਹਾਡੇ ਜਵਾਬ ਨਾਲ ਸਾਨੂੰ ਸੁਧਾਰ ਵਿੱਚ ਮਦਦ ਮਿਲਦੀ ਹੈ। ਤੁਹਾਡੀ ਫ਼ੋਟੋ ਸੰਭਾਲੀ ਨਹੀਂ ਜਾਂਦੀ।",
+    yes: "ਹਾਂ",
+    no: "ਨਹੀਂ",
+    notSure: "ਪਤਾ ਨਹੀਂ",
+    correctClassLabel: "ਕੀ ਤੁਸੀਂ ਜਾਣਦੇ ਹੋ ਕਿ ਅਸਲ ਵਿੱਚ ਇਹ ਕੀ ਹੈ? (ਵਿਕਲਪਿਕ)",
+    correctClassNone: "ਮੈਨੂੰ ਨਹੀਂ ਪਤਾ",
+    submit: "ਜਵਾਬ ਭੇਜੋ",
+    sending: "ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ…",
+    thanks: "ਧੰਨਵਾਦ। ਤੁਹਾਡਾ ਜਵਾਬ ਸੰਭਾਲ ਲਿਆ ਗਿਆ ਹੈ।",
+  },
+  errors: {
+    tryAgain: "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+    network: {
+      title: "ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ",
+      body: "AgriVision ਨਾਲ ਸੰਪਰਕ ਨਹੀਂ ਹੋ ਸਕਿਆ। ਆਪਣਾ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    },
+    timeout: {
+      title: "ਬਹੁਤ ਸਮਾਂ ਲੱਗ ਰਿਹਾ ਹੈ",
+      body: "ਕਨੈਕਸ਼ਨ ਹੌਲੀ ਹੋ ਸਕਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    },
+    serviceUnavailable: {
+      title: "ਸੇਵਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
+      body: "AgriVision ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਕੁਝ ਮਿੰਟਾਂ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    },
+    imageTooLarge: {
+      title: "ਫ਼ੋਟੋ ਬਹੁਤ ਵੱਡੀ ਹੈ",
+      body: "ਕਿਰਪਾ ਕਰਕੇ ਛੋਟੀ ਫ਼ੋਟੋ ਚੁਣੋ, ਜਾਂ ਕੈਮਰੇ ਨਾਲ ਨਵੀਂ ਫ਼ੋਟੋ ਲਓ।",
+    },
+    imageType: {
+      title: "ਇਹ ਫ਼ਾਈਲ ਵਰਤੀ ਨਹੀਂ ਜਾ ਸਕਦੀ",
+      body: "ਕਿਰਪਾ ਕਰਕੇ ਕੋਈ ਫ਼ੋਟੋ ਚੁਣੋ (JPEG, PNG ਜਾਂ WebP)।",
+    },
+    imageUnreadable: {
+      title: "ਇਹ ਫ਼ੋਟੋ ਖੁੱਲ੍ਹ ਨਹੀਂ ਸਕੀ",
+      body: "ਫ਼ਾਈਲ ਖ਼ਰਾਬ ਹੋ ਸਕਦੀ ਹੈ ਜਾਂ ਉਸ ਦਾ ਫ਼ਾਰਮੈਟ ਵੱਖਰਾ ਹੋ ਸਕਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਨਵੀਂ ਫ਼ੋਟੋ ਲਓ।",
+    },
+    analysisFailed: {
+      title: "ਇਹ ਫ਼ੋਟੋ ਜਾਂਚੀ ਨਹੀਂ ਜਾ ਸਕੀ",
+      body: "ਸਾਡੇ ਵੱਲੋਂ ਕੁਝ ਗੜਬੜ ਹੋ ਗਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    },
+    reportUnavailable: {
+      title: "ਇਸ ਵੇਲੇ ਸਲਾਹ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
+      body: "ਉੱਪਰਲਾ ਨਤੀਜਾ ਅਜੇ ਵੀ ਦਿਸ ਰਿਹਾ ਹੈ। ਤੁਸੀਂ ਸਲਾਹ ਦੁਬਾਰਾ ਲੋਡ ਕਰ ਸਕਦੇ ਹੋ।",
+    },
+    reportDisabled: {
+      title: "ਸਲਾਹ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
+      body: "ਉੱਪਰਲਾ ਨਤੀਜਾ ਅਜੇ ਵੀ ਦਿਸ ਰਿਹਾ ਹੈ। ਸਲਾਹ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਸਥਾਨਕ ਖੇਤੀਬਾੜੀ ਪਸਾਰ ਅਫ਼ਸਰ ਨੂੰ ਪੁੱਛੋ।",
+    },
+    busy: {
+      title: "ਬਹੁਤ ਜ਼ਿਆਦਾ ਬੇਨਤੀਆਂ",
+      body: "ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਮਿੰਟ ਰੁਕ ਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    },
+    feedbackRejected: {
+      title: "ਤੁਹਾਡਾ ਜਵਾਬ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ",
+      body: "ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    },
+    unexpected: {
+      title: "ਕੁਝ ਗੜਬੜ ਹੋ ਗਈ",
+      body: "ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    },
+  },
+  classes: {
+    Apple___Apple_scab: { crop: "ਸੇਬ", condition: "ਸੇਬ ਦਾ ਸਕੈਬ (ਖਰੀਂਡ ਰੋਗ)" },
+    Apple___Cedar_apple_rust: { crop: "ਸੇਬ", condition: "ਸੀਡਰ ਸੇਬ ਕੁੰਗੀ" },
+    Apple___healthy: { crop: "ਸੇਬ", condition: "ਸਿਹਤਮੰਦ" },
+    Blueberry___healthy: { crop: "ਬਲੂਬੇਰੀ", condition: "ਸਿਹਤਮੰਦ" },
+    "Cherry_(including_sour)___healthy": { crop: "ਚੈਰੀ", condition: "ਸਿਹਤਮੰਦ" },
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+      crop: "ਮੱਕੀ",
+      condition: "ਸਲੇਟੀ ਪੱਤਾ ਧੱਬਾ",
+    },
+    "Corn_(maize)___Common_rust_": { crop: "ਮੱਕੀ", condition: "ਆਮ ਕੁੰਗੀ" },
+    "Corn_(maize)___Northern_Leaf_Blight": { crop: "ਮੱਕੀ", condition: "ਉੱਤਰੀ ਪੱਤਾ ਝੁਲਸ" },
+    Grape___Black_rot: { crop: "ਅੰਗੂਰ", condition: "ਕਾਲੀ ਸੜਨ" },
+    Grape___healthy: { crop: "ਅੰਗੂਰ", condition: "ਸਿਹਤਮੰਦ" },
+    Peach___healthy: { crop: "ਆੜੂ", condition: "ਸਿਹਤਮੰਦ" },
+    "Pepper,_bell___Bacterial_spot": { crop: "ਸ਼ਿਮਲਾ ਮਿਰਚ", condition: "ਜੀਵਾਣੂ ਧੱਬਾ ਰੋਗ" },
+    "Pepper,_bell___healthy": { crop: "ਸ਼ਿਮਲਾ ਮਿਰਚ", condition: "ਸਿਹਤਮੰਦ" },
+    Potato___Early_blight: { crop: "ਆਲੂ", condition: "ਅਗੇਤਾ ਝੁਲਸ ਰੋਗ" },
+    Potato___healthy: { crop: "ਆਲੂ", condition: "ਸਿਹਤਮੰਦ" },
+    Potato___Late_blight: { crop: "ਆਲੂ", condition: "ਪਛੇਤਾ ਝੁਲਸ ਰੋਗ" },
+    Raspberry___healthy: { crop: "ਰਸਬੇਰੀ", condition: "ਸਿਹਤਮੰਦ" },
+    Soybean___healthy: { crop: "ਸੋਇਆਬੀਨ", condition: "ਸਿਹਤਮੰਦ" },
+    Squash___Powdery_mildew: { crop: "ਸਕੁਐਸ਼ (ਕੱਦੂ ਵਰਗ)", condition: "ਚਿੱਟਾ ਚੂਰਨ ਰੋਗ" },
+    Strawberry___healthy: { crop: "ਸਟ੍ਰਾਬੇਰੀ", condition: "ਸਿਹਤਮੰਦ" },
+    Tomato___Bacterial_spot: { crop: "ਟਮਾਟਰ", condition: "ਜੀਵਾਣੂ ਧੱਬਾ ਰੋਗ" },
+    Tomato___Early_blight: { crop: "ਟਮਾਟਰ", condition: "ਅਗੇਤਾ ਝੁਲਸ ਰੋਗ" },
+    Tomato___healthy: { crop: "ਟਮਾਟਰ", condition: "ਸਿਹਤਮੰਦ" },
+    Tomato___Late_blight: { crop: "ਟਮਾਟਰ", condition: "ਪਛੇਤਾ ਝੁਲਸ ਰੋਗ" },
+    Tomato___Leaf_Mold: { crop: "ਟਮਾਟਰ", condition: "ਪੱਤਿਆਂ ਦੀ ਉੱਲੀ" },
+    Tomato___Septoria_leaf_spot: { crop: "ਟਮਾਟਰ", condition: "ਸੈਪਟੋਰੀਆ ਪੱਤਾ ਧੱਬਾ" },
+    Tomato___Tomato_mosaic_virus: { crop: "ਟਮਾਟਰ", condition: "ਮੋਜ਼ੇਕ ਵਾਇਰਸ" },
+    Tomato___Tomato_Yellow_Leaf_Curl_Virus: { crop: "ਟਮਾਟਰ", condition: "ਪੀਲੀ ਪੱਤਾ ਮਰੋੜ ਵਾਇਰਸ" },
+  },
+};
