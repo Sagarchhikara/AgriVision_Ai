@@ -13,7 +13,17 @@ import { DEFAULT_LOCALE, isLocale } from "@/lib/i18n/config";
  * server root layout could not see the locale from up here, and a root layout
  * inside [locale] would be replaced whenever the locale changes.
  */
-export function LocaleHtml({ children }: { children: ReactNode }) {
+export function LocaleHtml({ className, children }: { className: string; children: ReactNode }) {
   const { locale } = useParams<{ locale?: string }>();
-  return <html lang={isLocale(locale) ? locale : DEFAULT_LOCALE}>{children}</html>;
+  return (
+    // data-scroll-behavior: the landing page scrolls smoothly (app/landing.css), and
+    // this tells Next.js to jump, not glide, when it resets scroll on navigation.
+    <html
+      lang={isLocale(locale) ? locale : DEFAULT_LOCALE}
+      className={className}
+      data-scroll-behavior="smooth"
+    >
+      {children}
+    </html>
+  );
 }
