@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
 const alertVariants = cva(
-  "group/alert relative grid w-full gap-1 rounded-lg border px-4 py-3 text-left text-base has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-3 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-5",
+  "group/alert relative grid w-full gap-1 rounded-xl border px-4 py-3 text-left text-base has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-3 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
@@ -11,7 +11,7 @@ const alertVariants = cva(
         warning:
           "border-warning-border bg-warning text-warning-foreground *:data-[slot=alert-description]:text-warning-foreground",
         destructive:
-          "border-destructive/40 bg-card text-destructive *:data-[slot=alert-description]:text-foreground",
+          "border-destructive/40 bg-destructive-surface text-destructive *:data-[slot=alert-description]:text-foreground",
       },
     },
     defaultVariants: {

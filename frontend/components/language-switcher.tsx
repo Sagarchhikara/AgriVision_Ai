@@ -16,14 +16,15 @@ function rememberLocale(locale: Locale) {
 /**
  * All languages visible at once, as links in their own scripts, rather than a
  * menu: someone who can't read the current language can still find their own.
+ * Pass `label` when a page shows two switchers, so their landmarks stay distinct.
  */
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ label }: { label?: string }) {
   const { locale, t } = useI18n();
   const pathname = usePathname();
   const path = pathname.replace(/^\/[^/]+/, "") || "/";
 
   return (
-    <nav aria-label={t.app.languageLabel}>
+    <nav aria-label={label ?? t.app.languageLabel}>
       <ul className="flex items-center gap-0.5">
         {LOCALES.map((code) => (
           <li key={code}>
@@ -36,9 +37,9 @@ export function LanguageSwitcher() {
               aria-current={code === locale ? "true" : undefined}
               onClick={() => rememberLocale(code)}
               className={cn(
-                "flex min-h-11 items-center rounded-lg px-2 text-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                "flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 text-sm transition-colors",
                 code === locale
-                  ? "bg-secondary font-semibold text-secondary-foreground underline underline-offset-4"
+                  ? "bg-secondary font-semibold text-secondary-foreground underline decoration-selected decoration-2 underline-offset-4"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >

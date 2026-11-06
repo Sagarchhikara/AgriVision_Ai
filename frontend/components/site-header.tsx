@@ -1,24 +1,22 @@
 "use client";
 
-import { Sprout } from "lucide-react";
 import Link from "next/link";
 
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { Wordmark } from "@/components/wordmark";
 
 export function SiteHeader() {
   const { t, href } = useI18n();
   return (
-    <header className="border-b border-border/70 bg-card/60">
-      <div className="mx-auto flex h-14 max-w-xl items-center justify-between gap-2 px-4">
+    <header className="sticky top-0 z-20 border-b bg-card print:static">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 md:px-6 lg:px-8">
         <Link
           href={href("/")}
           aria-label={t.app.homeLink}
-          className="-mx-2 flex min-h-11 items-center gap-2 rounded-lg px-2 text-lg font-semibold text-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="-mx-1 flex min-h-11 items-center rounded-lg px-1"
         >
-          <Sprout aria-hidden className="size-6 shrink-0" />
-          {/* The switcher needs the room on the narrowest phones. */}
-          <span className="max-[345px]:sr-only">{t.app.name}</span>
+          <Wordmark name={t.app.name} />
         </Link>
         <LanguageSwitcher />
       </div>
