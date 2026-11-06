@@ -23,7 +23,7 @@ export function PhotoTips() {
         <h2 id="photo-tips-title" className="text-h3 text-secondary-foreground">
           {t.tips.title}
         </h2>
-        <ul className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2.5 min-[420px]:grid-cols-2">
+        <ul className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2.5 min-[420px]:grid-cols-2 lg:grid-cols-1">
           {TIPS.map(({ key, icon: Icon }) => (
             <li key={key} className="flex items-center gap-2.5">
               <span className="grid size-8 shrink-0 place-items-center rounded-full bg-card text-primary">

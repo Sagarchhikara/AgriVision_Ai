@@ -1,10 +1,11 @@
 "use client";
 
-import { Camera, ImageUp, RefreshCw } from "lucide-react";
+import { Camera, ImageUp, Leaf, RefreshCw } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
+import { MAX_INPUT_BYTES } from "@/lib/image";
 import { cn } from "cn";
 
 /**
@@ -86,33 +87,44 @@ export function PhotoPicker({
       onDragLeave={() => setDragging(false)}
       onDrop={onDrop}
       className={cn(
-        "flex flex-col gap-3 rounded-xl border-2 border-dashed border-input bg-card p-5 transition-colors",
+        "flex min-h-80 flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-input bg-card p-6 text-center transition-colors lg:min-h-112",
         dragging && "border-primary bg-secondary/50",
       )}
     >
       {inputs}
-      <Button
-        size="lg"
-        className="hidden pointer-coarse:inline-flex"
-        disabled={disabled}
-        onClick={() => cameraInput.current?.click()}
+      <span
+        aria-hidden
+        className="grid size-16 place-items-center rounded-2xl bg-secondary text-primary"
       >
-        <Camera aria-hidden />
-        {t.upload.takePhoto}
-      </Button>
-      <Button
-        size="lg"
-        // Secondary to the camera on touch devices, primary everywhere else.
-        className="pointer-coarse:border-input pointer-coarse:bg-card pointer-coarse:text-foreground pointer-coarse:hover:bg-muted"
-        disabled={disabled}
-        onClick={() => fileInput.current?.click()}
-      >
-        <ImageUp aria-hidden />
-        {t.upload.choosePhoto}
-      </Button>
-      <p aria-hidden className="text-center text-sm text-muted-foreground pointer-coarse:hidden">
-        {dragging ? t.upload.dropActive : t.upload.dropHint}
-      </p>
+        <Leaf className="size-8" />
+      </span>
+      <div className="flex w-full max-w-sm flex-col gap-3">
+        <Button
+          size="lg"
+          className="hidden pointer-coarse:inline-flex"
+          disabled={disabled}
+          onClick={() => cameraInput.current?.click()}
+        >
+          <Camera aria-hidden />
+          {t.upload.takePhoto}
+        </Button>
+        <Button
+          size="lg"
+          // Secondary to the camera on touch devices, primary everywhere else.
+          className="pointer-coarse:border-input pointer-coarse:bg-card pointer-coarse:text-foreground pointer-coarse:hover:bg-muted"
+          disabled={disabled}
+          onClick={() => fileInput.current?.click()}
+        >
+          <ImageUp aria-hidden />
+          {t.upload.choosePhoto}
+        </Button>
+      </div>
+      <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+        <p aria-hidden className="pointer-coarse:hidden">
+          {dragging ? t.upload.dropActive : t.upload.dropHint}
+        </p>
+        <p>{t.upload.formats.replace("{size}", String(MAX_INPUT_BYTES / (1024 * 1024)))}</p>
+      </div>
     </div>
   );
 }
