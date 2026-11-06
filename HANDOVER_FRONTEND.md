@@ -1,6 +1,6 @@
 # AgriVision_Ai: Web Frontend Handover
 
-Last updated 2026-11-05. Covers the web frontend and the backend changes made to support it. For the model, data pipeline, and LLM layer, read `HANDOVER.md`; this document overrides it where the two disagree (see §10).
+Last updated 2026-11-06. Covers the web frontend and the backend changes made to support it. For the model, data pipeline, and LLM layer, read `HANDOVER.md`; this document overrides it where the two disagree (see §10).
 
 ## 1. Current state
 
@@ -15,7 +15,9 @@ Phases 0 to 4 of 6 are done. The app works end to end in English, Hindi, and Pun
 | 4 | Hindi and Punjabi, accessibility, responsive polish | Done |
 | 5 | Dockerfiles, `docker-compose.yml`, deployment notes | **Next, not started** |
 
-**Where the code is:** branch `feature/frontend`, 11 commits ahead of `main`. Not pushed, not merged.
+**Visual redesign:** done against `AGRIVISION_VISUAL_REDESIGN_SPEC.md` for the design foundation, diagnosis workspace, results and report. The spec's home screen is covered by the landing page. History/insights is not built: it needs persistence the backend does not have, and the spec rules out invented data. Bottom navigation was skipped too, because the app has only one destination.
+
+**Where the code is:** branch `feature/frontend`, 22 commits ahead of `main`. Not pushed, not merged.
 
 **Uncommitted work that is not part of this branch:** `HANDOVER.md` and `evaluate.py` have local edits from before the frontend work started. They have deliberately been left out of every commit.
 
@@ -136,7 +138,12 @@ frontend/
 
 - **Never `@import "shadcn/tailwind.css"`.** With `@tailwindcss/turbopack` it silently drops the rest of `globals.css`: all colours vanish and the build still passes. `app/shadcn-variants.css` holds the variants the components need. After `npx shadcn add`, confirm the theme is still in the build, and that the command did not add the import.
 - **Keep `AnalysisProvider` above `[locale]`.** Everything under `[locale]` remounts on a language switch. The Next.js docs suggest a root layout inside the locale segment; that was avoided so the in-memory photo survives. `components/locale-html.tsx` sets `<html lang>` from the URL because a server layout up there cannot see the locale.
-- **Grad-CAM covers only the model's crop.** The heatmap is the centred 224/255 of the short side, so the result page shows the same crop rather than the full photo. `MODEL_CROP_FRACTION` in `lib/image.ts` mirrors `data/transforms.py`. Change one, change the other.
+- **Grad-CAM covers only the model's crop.** The heatmap is the centred 224/255 of the short side, so the "Model's view" and "Model focus" views show that same crop; only "Your photo" shows the full frame. `MODEL_CROP_FRACTION` in `lib/image.ts` mirrors `data/transforms.py`. Change one, change the other.
+- **Palette rule.** Components use the semantic tokens in `globals.css`, never the palette. Olive, Terracotta, Stone and Harvest fail AA as text, so they stay on borders and decoration. `--muted-foreground` is deliberately darker than the spec's Muted.
+- **Fonts need network at build time.** `next/font/google` downloads Inter and Manrope during `next build` and self-hosts them, so browsers never call Google, but the Phase 5 Docker build needs outbound access. Neither font covers Devanagari or Gurmukhi: those use the Noto and system fonts in `--font-sans`.
+- **Do not add letter-spacing to Hindi or Punjabi text.** It breaks the headstroke joining the letters, so heading tracking is scoped to `html:lang(en)`.
+- **Automated mobile screenshots can lie.** A Playwright `fullPage` shot taller than the viewport drops `pointer: coarse` for that capture, hiding the camera button. Use a tall viewport instead. The V1 mobile shots in `docs/redesign/` have this quirk.
+- **Result layout is order-sensitive.** Source order in `result-screen.tsx` is the mobile reading order and differs by variant; desktop placement comes from the grid. Keep both when editing.
 - **Other values copied by hand:** `KNOWN_CLASSES` in `lib/classes.ts` mirrors the model's classes (unknown classes fall back to a cleaned raw name), and `SupportedLanguage` mirrors `LANGUAGE_NAMES` (a backend test keeps those in sync).
 - **The server-rendered 404 is an empty page.** The status is correct and the browser fills in the translated content, so it needs JavaScript. A server-side `<html>` was not tried, so whether the client-rendered `<html>` is the cause is unknown.
 - **Landing images are static imports, not `public/` files.** `proxy.ts` would redirect a `public/` path to a locale; `/_next/static` is already skipped. The credit list in `components/landing/photo-credits.ts` is a licence requirement: keep it in step with the photos.
