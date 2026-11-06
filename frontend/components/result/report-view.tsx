@@ -8,13 +8,15 @@ import {
   type LucideIcon,
   Search,
   ShieldCheck,
-  Sprout,
   UserRound,
+  UserRoundCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
 import { useI18n } from "@/components/i18n-provider";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ReportState } from "@/hooks/use-report";
@@ -34,26 +36,36 @@ export type ReportVariant = "standard" | "uncertain" | "healthy";
 function Section({
   icon: Icon,
   title,
+  level: Heading = "h3",
   children,
 }: {
   icon: LucideIcon;
   title: string;
+  level?: "h3" | "h4";
   children: ReactNode;
 }) {
   return (
-    <section className="flex break-inside-avoid flex-col gap-1.5">
-      <h3 className="flex items-center gap-2 text-h3">
-        <Icon aria-hidden className="size-5 shrink-0 text-primary" />
+    <section className="grid break-inside-avoid grid-cols-[auto_minmax(0,1fr)] content-start items-center gap-x-3 gap-y-2">
+      <span className="grid size-9 place-items-center rounded-lg bg-secondary text-primary">
+        <Icon aria-hidden className="size-5" />
+      </span>
+      <Heading className={Heading === "h3" ? "text-h3" : "font-heading font-semibold"}>
         {title}
-      </h3>
-      {children}
+      </Heading>
+      <div className="col-span-2 flex flex-col gap-2 leading-relaxed md:col-span-1 md:col-start-2">
+        {children}
+      </div>
     </section>
   );
 }
 
+function Row({ children }: { children: ReactNode }) {
+  return <div className="p-4 md:p-6 print:px-0">{children}</div>;
+}
+
 function Bullets({ items }: { items: string[] }) {
   return (
-    <ul className="flex list-disc flex-col gap-1 pl-5 marker:text-primary">
+    <ul className="flex list-disc flex-col gap-2 pl-5 marker:text-selected">
       {items.map((item) => (
         <li key={item}>{item}</li>
       ))}
@@ -67,34 +79,47 @@ function Treatment({ report, variant }: { report: Report; variant: ReportVariant
 
   if (variant === "uncertain") {
     return (
-      <>
-        {organic.length > 0 && (
-          <Section icon={Leaf} title={t.report.organicUncertain}>
-            <Bullets items={organic} />
-          </Section>
-        )}
-        <Section icon={FlaskConical} title={t.report.chemical}>
-          <p>{t.report.chemicalUncertain}</p>
-        </Section>
-      </>
+      <Row>
+        <div className="flex flex-col gap-6">
+          {organic.length > 0 && (
+            <Section icon={Leaf} title={t.report.organicUncertain}>
+              <Bullets items={organic} />
+            </Section>
+          )}
+          <Alert role="note" variant="warning">
+            <FlaskConical aria-hidden />
+            <AlertTitle>{t.report.chemical}</AlertTitle>
+            <AlertDescription>{t.report.chemicalUncertain}</AlertDescription>
+          </Alert>
+        </div>
+      </Row>
     );
   }
 
   return (
-    <Card variant="muted" className="flex flex-col gap-4 p-4">
-      <p className="font-semibold">{t.report.ifConfirmed}</p>
-      {organic.length > 0 && (
-        <Section icon={Leaf} title={t.report.organic}>
-          <Bullets items={organic} />
-        </Section>
-      )}
-      <Section icon={FlaskConical} title={t.report.chemical}>
-        {chemical.length > 0 && <Bullets items={chemical} />}
-        <p className="font-medium">{t.report.chemicalNote}</p>
-      </Section>
-    </Card>
+    <Row>
+      <div className="overflow-hidden rounded-xl border">
+        <div className="flex items-center gap-2.5 bg-secondary px-4 py-3 text-secondary-foreground">
+          <UserRoundCheck aria-hidden className="size-5 shrink-0" />
+          <h3 className="text-h3">{t.report.ifConfirmed}</h3>
+        </div>
+        <div className="flex flex-col gap-6 bg-muted/40 p-4">
+          {organic.length > 0 && (
+            <Section icon={Leaf} title={t.report.organic} level="h4">
+              <Bullets items={organic} />
+            </Section>
+          )}
+          <Section icon={FlaskConical} title={t.report.chemical} level="h4">
+            {chemical.length > 0 && <Bullets items={chemical} />}
+            <p className="border-l-3 border-selected pl-3 font-medium">{t.report.chemicalNote}</p>
+          </Section>
+        </div>
+      </div>
+    </Row>
   );
 }
+
+const URGENCY_BADGE = { low: "info", medium: "uncertain", high: "error" } as const;
 
 function ReportBody({ report, variant }: { report: Report; variant: ReportVariant }) {
   const { t } = useI18n();
@@ -105,48 +130,63 @@ function ReportBody({ report, variant }: { report: Report; variant: ReportVarian
   }[variant];
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="divide-y">
       {report.summary && (
-        <Section icon={Sprout} title={t.report.summary}>
-          <p>{report.summary}</p>
-        </Section>
+        <div className="break-inside-avoid bg-secondary/40 p-4 md:p-6 print:px-0">
+          <h3 className="text-h3 text-secondary-foreground">{t.report.summary}</h3>
+          <p className="mt-2 text-lg leading-relaxed">{report.summary}</p>
+        </div>
       )}
 
       {variant === "standard" && (
-        <Section icon={Gauge} title={t.report.urgency}>
-          <p>
-            <strong>{t.report.urgencyLevels[report.severity]}.</strong> {report.severity_reason}
-          </p>
-        </Section>
+        <Row>
+          <Section icon={Gauge} title={t.report.urgency}>
+            <div>
+              <Badge variant={URGENCY_BADGE[report.severity]}>
+                {t.report.urgencyLevels[report.severity]}
+              </Badge>
+            </div>
+            <p>{report.severity_reason}</p>
+          </Section>
+        </Row>
       )}
 
       {report.symptoms_to_check.length > 0 && (
-        <Section icon={Search} title={symptomsTitle}>
-          <Bullets items={report.symptoms_to_check} />
-        </Section>
+        <Row>
+          <Section icon={Search} title={symptomsTitle}>
+            <Bullets items={report.symptoms_to_check} />
+          </Section>
+        </Row>
       )}
 
       {variant !== "healthy" && <Treatment report={report} variant={variant} />}
 
       {report.prevention.length > 0 && (
-        <Section
-          icon={ShieldCheck}
-          title={variant === "healthy" ? t.report.preventionHealthy : t.report.prevention}
-        >
-          <Bullets items={report.prevention} />
-        </Section>
+        <Row>
+          <Section
+            icon={ShieldCheck}
+            title={variant === "healthy" ? t.report.preventionHealthy : t.report.prevention}
+          >
+            <Bullets items={report.prevention} />
+          </Section>
+        </Row>
       )}
 
-      {report.when_to_consult_expert && (
-        <Section icon={UserRound} title={t.report.consultExpert}>
-          <p>{report.when_to_consult_expert}</p>
-        </Section>
-      )}
-
-      {report.confidence_note && (
-        <Section icon={CircleHelp} title={t.report.confidenceNote}>
-          <p>{report.confidence_note}</p>
-        </Section>
+      {(report.when_to_consult_expert || report.confidence_note) && (
+        <Row>
+          <div className="grid gap-6 @xl:grid-cols-2">
+            {report.when_to_consult_expert && (
+              <Section icon={UserRound} title={t.report.consultExpert}>
+                <p>{report.when_to_consult_expert}</p>
+              </Section>
+            )}
+            {report.confidence_note && (
+              <Section icon={CircleHelp} title={t.report.confidenceNote}>
+                <p>{report.confidence_note}</p>
+              </Section>
+            )}
+          </div>
+        </Row>
       )}
     </div>
   );
@@ -201,7 +241,7 @@ export function ReportView({
         </Card>
       )}
       {state.status === "ready" && (
-        <Card className="p-4 md:p-6 print:border-0 print:p-0 print:shadow-none">
+        <Card className="@container overflow-hidden print:border-0 print:shadow-none">
           <ReportBody report={state.report} variant={variant} />
         </Card>
       )}
