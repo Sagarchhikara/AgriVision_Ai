@@ -5,10 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { ReadingColumn } from "@/components/app-shell";
 import { BackendStatus } from "@/components/backend-status";
 import { ErrorAlert } from "@/components/error-alert";
 import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { PhotoPicker } from "@/components/upload/photo-picker";
 import { PhotoTips } from "@/components/upload/photo-tips";
 import { predict } from "@/lib/api";
@@ -59,9 +61,9 @@ export function UploadScreen() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <ReadingColumn className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">{t.upload.title}</h1>
+        <h1 className="text-h1">{t.upload.title}</h1>
         <p className="mt-1 text-muted-foreground">{t.upload.intro}</p>
       </div>
 
@@ -70,16 +72,18 @@ export function UploadScreen() {
       {!photo && <PhotoTips />}
 
       {photo && (
-        <figure className="overflow-hidden rounded-xl border bg-card">
-          <Image
-            src={photo.url}
-            alt={t.upload.previewAlt}
-            width={photo.width}
-            height={photo.height}
-            unoptimized
-            className="max-h-[55vh] w-full object-contain"
-          />
-        </figure>
+        <Card asChild className="overflow-hidden">
+          <figure>
+            <Image
+              src={photo.url}
+              alt={t.upload.previewAlt}
+              width={photo.width}
+              height={photo.height}
+              unoptimized
+              className="max-h-[55vh] w-full object-contain"
+            />
+          </figure>
+        </Card>
       )}
 
       {/* Always mounted so screen readers announce changes; sr-only (absolute)
@@ -106,6 +110,6 @@ export function UploadScreen() {
       </div>
 
       {photo && <PhotoTips />}
-    </div>
+    </ReadingColumn>
   );
 }

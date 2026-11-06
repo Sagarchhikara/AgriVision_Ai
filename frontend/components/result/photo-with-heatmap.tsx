@@ -47,7 +47,7 @@ export function PhotoWithHeatmap({ photoUrl, heatmap }: { photoUrl: string; heat
             aria-pressed={showFocus === focus}
             onClick={() => setShowFocus(focus)}
             className={cn(
-              "h-11 rounded-md text-sm font-medium transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+              "h-11 rounded-md text-sm font-medium transition-colors",
               showFocus === focus
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",

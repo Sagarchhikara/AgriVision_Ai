@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/components/i18n-provider";
+import { Card } from "@/components/ui/card";
 import type { ClassPrediction } from "@/lib/api";
 import { classLabel } from "@/lib/classes";
 import { formatPercent } from "@/lib/format";
@@ -23,7 +24,7 @@ export function TopPredictions({
   return (
     <section aria-labelledby="matches-heading" className="flex flex-col gap-3">
       <div>
-        <h2 id="matches-heading" className="text-lg font-semibold">
+        <h2 id="matches-heading" className="text-h2">
           {t.result.possibleMatches}
         </h2>
         <p className="text-sm text-muted-foreground">{t.result.possibleMatchesNote}</p>
@@ -33,30 +34,32 @@ export function TopPredictions({
           const label = classLabel(prediction.class_name, t);
           const strong = emphasizeFirst && index === 0;
           return (
-            <li key={prediction.class_name} className="rounded-lg border bg-card p-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className={cn("leading-snug", strong && "font-semibold")}>
-                  {label.condition}
-                  {label.crop && (
-                    <span className="block text-sm font-normal text-muted-foreground">
-                      {label.crop}
-                    </span>
-                  )}
-                </p>
-                <span className="shrink-0 font-medium tabular-nums">
-                  {formatPercent(prediction.confidence, locale)}
-                </span>
-              </div>
-              <div aria-hidden className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className={cn(
-                    "h-full rounded-full",
-                    strong ? "bg-primary" : "bg-muted-foreground/50",
-                  )}
-                  style={{ width: `${Math.max(prediction.confidence * 100, 1)}%` }}
-                />
-              </div>
-            </li>
+            <Card asChild key={prediction.class_name} className="p-3">
+              <li>
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className={cn("leading-snug", strong && "font-semibold")}>
+                    {label.condition}
+                    {label.crop && (
+                      <span className="block text-sm font-normal text-muted-foreground">
+                        {label.crop}
+                      </span>
+                    )}
+                  </p>
+                  <span className="shrink-0 font-medium tabular-nums">
+                    {formatPercent(prediction.confidence, locale)}
+                  </span>
+                </div>
+                <div aria-hidden className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={cn(
+                      "h-full rounded-full",
+                      strong ? "bg-primary" : "bg-muted-foreground/50",
+                    )}
+                    style={{ width: `${Math.max(prediction.confidence * 100, 1)}%` }}
+                  />
+                </div>
+              </li>
+            </Card>
           );
         })}
       </ol>

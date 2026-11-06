@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
 import { useI18n } from "@/components/i18n-provider";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ReportState } from "@/hooks/use-report";
 import type { Report } from "@/lib/api";
@@ -41,7 +42,7 @@ function Section({
 }) {
   return (
     <section className="flex flex-col gap-1.5">
-      <h3 className="flex items-center gap-2 font-semibold">
+      <h3 className="flex items-center gap-2 text-h3">
         <Icon aria-hidden className="size-5 shrink-0 text-primary" />
         {title}
       </h3>
@@ -80,7 +81,7 @@ function Treatment({ report, variant }: { report: Report; variant: ReportVariant
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border bg-muted/40 p-4">
+    <Card variant="muted" className="flex flex-col gap-4 p-4">
       <p className="font-semibold">{t.report.ifConfirmed}</p>
       {organic.length > 0 && (
         <Section icon={Leaf} title={t.report.organic}>
@@ -91,7 +92,7 @@ function Treatment({ report, variant }: { report: Report; variant: ReportVariant
         {chemical.length > 0 && <Bullets items={chemical} />}
         <p className="font-medium">{t.report.chemicalNote}</p>
       </Section>
-    </div>
+    </Card>
   );
 }
 
@@ -173,7 +174,7 @@ export function ReportView({
   const { t } = useI18n();
   return (
     <section aria-labelledby="report-heading" className="flex flex-col gap-3">
-      <h2 id="report-heading" className="text-lg font-semibold">
+      <h2 id="report-heading" className="text-h2">
         {t.report.heading}
       </h2>
       {state.status === "loading" && <ReportSkeleton />}
