@@ -107,8 +107,13 @@ frontend/
     layout.tsx              # root: <html>, AnalysisProvider. Above [locale] on purpose (§7)
     globals.css             # theme tokens; light only, for use outdoors
     shadcn-variants.css     # copied variants (§7)
-    [locale]/               # layout (I18nProvider, header), upload page, result, 404
+    landing.css             # landing-only motion and display type; imported by (marketing)
+    [locale]/               # layout (I18nProvider only)
+      (marketing)/          # / : landing page, with its own nav and footer
+      (app)/                # AppShell: /diagnose (upload), /result, 404
+  assets/landing/           # landing photos; sources and licences in components/landing/photo-credits.ts
   components/
+    landing/                # landing page sections
     upload/  result/  ui/   # screens and shadcn primitives
     language-switcher.tsx  locale-html.tsx  backend-status.tsx  error-alert.tsx
   hooks/                    # use-report, use-health, use-class-list
@@ -119,6 +124,7 @@ frontend/
     image.ts                # validate, orient, resize, crop
     classes.ts              # display names for the 28 classes
     i18n/                   # config, server-only dictionary loader, en/hi/pa
+      landing/              # landing strings, kept out of the dictionary sent to every screen
   state/analysis-context.tsx  # photo, prediction, feedbackSent; in memory only
 ```
 
@@ -133,6 +139,8 @@ frontend/
 - **Grad-CAM covers only the model's crop.** The heatmap is the centred 224/255 of the short side, so the result page shows the same crop rather than the full photo. `MODEL_CROP_FRACTION` in `lib/image.ts` mirrors `data/transforms.py`. Change one, change the other.
 - **Other values copied by hand:** `KNOWN_CLASSES` in `lib/classes.ts` mirrors the model's classes (unknown classes fall back to a cleaned raw name), and `SupportedLanguage` mirrors `LANGUAGE_NAMES` (a backend test keeps those in sync).
 - **The server-rendered 404 is an empty page.** The status is correct and the browser fills in the translated content, so it needs JavaScript. A server-side `<html>` was not tried, so whether the client-rendered `<html>` is the cause is unknown.
+- **Landing images are static imports, not `public/` files.** `proxy.ts` would redirect a `public/` path to a locale; `/_next/static` is already skipped. The credit list in `components/landing/photo-credits.ts` is a licence requirement: keep it in step with the photos.
+- **The landing page's percentages and advice are samples**, labelled as such. Its Grad-CAM images are real model output, from running those photos through `/predict`.
 - **`proxy.ts` needs a running Next server.** The frontend cannot be deployed as a static export.
 - **`NEXT_PUBLIC_API_BASE_URL` is fixed at build time.** It is compiled into the browser bundle.
 - **`npm audit` shows moderate issues in dev tooling only.** `npm audit --omit=dev` reports 0. Do not run `npm audit fix --force`; it would downgrade ESLint.
@@ -140,7 +148,7 @@ frontend/
 
 ## 8. Before this reaches farmers
 
-1. **Review the translations. This is the main blocker.** `lib/i18n/dictionaries/hi.ts` and `pa.ts` are unreviewed drafts, marked as such at the top. A native speaker with agronomy knowledge should check the disease names in `classes`, the term for extension officer (कृषि विस्तार अधिकारी, ਖੇਤੀਬਾੜੀ ਪਸਾਰ ਅਫ਼ਸਰ), and the disclaimer.
+1. **Review the translations. This is the main blocker.** `lib/i18n/dictionaries/hi.ts` and `pa.ts`, and `lib/i18n/landing/hi.ts` and `pa.ts`, are unreviewed drafts, marked as such at the top. A native speaker with agronomy knowledge should check the disease names in `classes`, the term for extension officer (कृषि विस्तार अधिकारी, ਖੇਤੀਬਾੜੀ ਪਸਾਰ ਅਫ਼ਸਰ), and the disclaimer.
 2. **Test on real phones.** Camera capture, low-end Android performance, and iPhone HEIC photos are all unverified. Everything so far used Chromium's mobile emulation.
 3. **Test with a real screen reader.** Only automated checks have run.
 4. **Decide about LLM tone.** Real reports can sound definite: one Hindi report opens with "this is a very dangerous fungal disease". The wording comes from the prompts, which are off-limits without the owner's say-so.
