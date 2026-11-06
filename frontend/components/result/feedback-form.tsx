@@ -72,7 +72,7 @@ export function FeedbackForm({
   const sending = status.kind === "sending";
 
   return (
-    <Card asChild className="p-4">
+    <Card asChild className="p-4 md:p-6 print:hidden">
       <section aria-labelledby="feedback-heading">
         <h2 id="feedback-heading" className="text-h2">
           {uncertain ? t.feedback.titleUncertain : t.feedback.title}

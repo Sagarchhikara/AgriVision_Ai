@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, CircleHelp, ImageOff, ScanSearch } from "lucide-react";
+import { Camera, CircleHelp, ImageOff, Leaf, ScanSearch } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useRef } from "react";
@@ -57,13 +57,26 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
   const top = classLabel(prediction.prediction, t);
   const variant: ReportVariant = uncertain ? "uncertain" : top.healthy ? "healthy" : "standard";
 
-  const photoView = <PhotoWithHeatmap photoUrl={photo.modelViewUrl} heatmap={prediction.heatmap} />;
-  const matches = (
-    <TopPredictions predictions={prediction.top_predictions} emphasizeFirst={!uncertain} />
+  const photoView = (
+    <div className="lg:sticky lg:top-24 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-start">
+      <PhotoWithHeatmap
+        originalUrl={photo.url}
+        photoUrl={photo.modelViewUrl}
+        heatmap={prediction.heatmap}
+      />
+    </div>
   );
+  const matches = (
+    <div className="lg:col-start-2 lg:row-start-1">
+      <TopPredictions predictions={prediction.top_predictions} emphasizeFirst={!uncertain} />
+    </div>
+  );
+  const reportContext = uncertain
+    ? t.result.uncertainTitle
+    : [top.condition, top.crop].filter(Boolean).join(" · ");
 
   return (
-    <ReadingColumn className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <Disclaimer />
 
       {uncertain ? (
@@ -84,13 +97,16 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
             <AlertTitle>{t.result.betterPhotoTitle}</AlertTitle>
             <AlertDescription>
               <p>{t.result.betterPhotoBody}</p>
-              <Button size="sm" variant="outline" className="mt-2 bg-card" onClick={startOver}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 bg-card print:hidden"
+                onClick={startOver}
+              >
                 {t.result.tryAnotherPhoto}
               </Button>
             </AlertDescription>
           </Alert>
-          {matches}
-          {photoView}
         </>
       ) : (
         <>
@@ -99,7 +115,12 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
             <h1 ref={heading} tabIndex={-1} className="text-h1 outline-none">
               {top.condition}
             </h1>
-            {top.crop && <Badge className="mt-2">{top.crop}</Badge>}
+            {top.crop && (
+              <Badge variant={top.healthy ? "healthy" : "neutral"} className="mt-2">
+                {top.healthy && <Leaf aria-hidden />}
+                {top.crop}
+              </Badge>
+            )}
             <p className="mt-3">
               {t.result.confidenceLine}{" "}
               <strong className="tabular-nums">
@@ -108,19 +129,29 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
             </p>
             <p className="mt-1 text-sm text-muted-foreground">{t.result.canBeWrong}</p>
           </header>
-          {photoView}
-          {matches}
         </>
       )}
 
-      <ReportView state={reportState} variant={variant} onRetry={retry} />
-      <FeedbackForm prediction={prediction} uncertain={uncertain} />
-
-      <Button size="lg" variant="outline" onClick={startOver}>
-        <ScanSearch aria-hidden />
-        {t.result.analyzeAnother}
-      </Button>
-    </ReadingColumn>
+      {/* Source order is the mobile reading order, and it differs by variant:
+          an uncertain result leads with the candidates, not the photo. */}
+      <div className="grid gap-6 lg:grid-cols-[24rem_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-8">
+        {uncertain ? matches : photoView}
+        {uncertain ? photoView : matches}
+        <div className="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-start-2">
+          <ReportView
+            state={reportState}
+            variant={variant}
+            context={reportContext}
+            onRetry={retry}
+          />
+          <FeedbackForm prediction={prediction} uncertain={uncertain} />
+          <Button size="lg" variant="outline" className="print:hidden" onClick={startOver}>
+            <ScanSearch aria-hidden />
+            {t.result.analyzeAnother}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

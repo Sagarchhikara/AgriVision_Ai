@@ -41,7 +41,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-1.5">
+    <section className="flex break-inside-avoid flex-col gap-1.5">
       <h3 className="flex items-center gap-2 text-h3">
         <Icon aria-hidden className="size-5 shrink-0 text-primary" />
         {title}
@@ -106,9 +106,11 @@ function ReportBody({ report, variant }: { report: Report; variant: ReportVarian
 
   return (
     <div className="flex flex-col gap-5">
-      <Section icon={Sprout} title={t.report.summary}>
-        <p>{report.summary}</p>
-      </Section>
+      {report.summary && (
+        <Section icon={Sprout} title={t.report.summary}>
+          <p>{report.summary}</p>
+        </Section>
+      )}
 
       {variant === "standard" && (
         <Section icon={Gauge} title={t.report.urgency}>
@@ -118,26 +120,34 @@ function ReportBody({ report, variant }: { report: Report; variant: ReportVarian
         </Section>
       )}
 
-      <Section icon={Search} title={symptomsTitle}>
-        <Bullets items={report.symptoms_to_check} />
-      </Section>
+      {report.symptoms_to_check.length > 0 && (
+        <Section icon={Search} title={symptomsTitle}>
+          <Bullets items={report.symptoms_to_check} />
+        </Section>
+      )}
 
       {variant !== "healthy" && <Treatment report={report} variant={variant} />}
 
-      <Section
-        icon={ShieldCheck}
-        title={variant === "healthy" ? t.report.preventionHealthy : t.report.prevention}
-      >
-        <Bullets items={report.prevention} />
-      </Section>
+      {report.prevention.length > 0 && (
+        <Section
+          icon={ShieldCheck}
+          title={variant === "healthy" ? t.report.preventionHealthy : t.report.prevention}
+        >
+          <Bullets items={report.prevention} />
+        </Section>
+      )}
 
-      <Section icon={UserRound} title={t.report.consultExpert}>
-        <p>{report.when_to_consult_expert}</p>
-      </Section>
+      {report.when_to_consult_expert && (
+        <Section icon={UserRound} title={t.report.consultExpert}>
+          <p>{report.when_to_consult_expert}</p>
+        </Section>
+      )}
 
-      <Section icon={CircleHelp} title={t.report.confidenceNote}>
-        <p>{report.confidence_note}</p>
-      </Section>
+      {report.confidence_note && (
+        <Section icon={CircleHelp} title={t.report.confidenceNote}>
+          <p>{report.confidence_note}</p>
+        </Section>
+      )}
     </div>
   );
 }
@@ -146,9 +156,7 @@ function ReportSkeleton() {
   const { t } = useI18n();
   return (
     <div className="flex flex-col gap-4">
-      <p role="status" className="text-muted-foreground">
-        {t.report.loading}
-      </p>
+      <p className="text-muted-foreground">{t.report.loading}</p>
       <div aria-hidden className="flex flex-col gap-5">
         {[0, 1, 2].map((block) => (
           <div key={block} className="flex flex-col gap-2">
@@ -165,20 +173,38 @@ function ReportSkeleton() {
 export function ReportView({
   state,
   variant,
+  context,
   onRetry,
 }: {
   state: ReportState;
   variant: ReportVariant;
+  context: string;
   onRetry: () => void;
 }) {
   const { t } = useI18n();
   return (
     <section aria-labelledby="report-heading" className="flex flex-col gap-3">
-      <h2 id="report-heading" className="text-h2">
-        {t.report.heading}
-      </h2>
-      {state.status === "loading" && <ReportSkeleton />}
-      {state.status === "ready" && <ReportBody report={state.report} variant={variant} />}
+      {/* Always mounted, or the arrival of the report would go unannounced. */}
+      <div role="status" className="sr-only">
+        {state.status === "loading" && t.report.loading}
+        {state.status === "ready" && t.report.ready}
+      </div>
+      <div className="break-after-avoid">
+        <h2 id="report-heading" className="text-h2">
+          {t.report.heading}
+        </h2>
+        <p className="text-sm text-muted-foreground">{context}</p>
+      </div>
+      {state.status === "loading" && (
+        <Card className="p-4 md:p-6">
+          <ReportSkeleton />
+        </Card>
+      )}
+      {state.status === "ready" && (
+        <Card className="p-4 md:p-6 print:border-0 print:p-0 print:shadow-none">
+          <ReportBody report={state.report} variant={variant} />
+        </Card>
+      )}
       {state.status === "error" && (
         <ErrorAlert
           code={state.code}

@@ -49,13 +49,17 @@ export function TopPredictions({
                     {formatPercent(prediction.confidence, locale)}
                   </span>
                 </div>
-                <div aria-hidden className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  aria-hidden
+                  className="mt-2 h-2 overflow-hidden rounded-full bg-muted print:hidden"
+                >
                   <div
                     className={cn(
                       "h-full rounded-full",
                       strong ? "bg-primary" : "bg-muted-foreground/50",
                     )}
-                    style={{ width: `${Math.max(prediction.confidence * 100, 1)}%` }}
+                    // Capped so a saturated score never draws a bar that reads as certainty.
+                    style={{ width: `${Math.min(Math.max(prediction.confidence * 100, 1), 96)}%` }}
                   />
                 </div>
               </li>
