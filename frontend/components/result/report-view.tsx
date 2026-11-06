@@ -223,13 +223,16 @@ export function ReportView({
 }) {
   const { t } = useI18n();
   return (
-    <section aria-labelledby="report-heading" className="flex flex-col gap-3">
+    <section
+      aria-labelledby="report-heading"
+      className="flex flex-col gap-3 print:break-before-page"
+    >
       {/* Always mounted, or the arrival of the report would go unannounced. */}
       <div role="status" className="sr-only">
         {state.status === "loading" && t.report.loading}
         {state.status === "ready" && t.report.ready}
       </div>
-      <div className="break-after-avoid">
+      <div>
         <h2 id="report-heading" className="text-h2">
           {t.report.heading}
         </h2>
