@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useRef } from "react";
 
+import { ReadingColumn } from "@/components/app-shell";
 import { useI18n } from "@/components/i18n-provider";
 import { Disclaimer } from "@/components/result/disclaimer";
 import { FeedbackForm } from "@/components/result/feedback-form";
@@ -12,11 +13,13 @@ import { PhotoWithHeatmap } from "@/components/result/photo-with-heatmap";
 import { ReportView, type ReportVariant } from "@/components/result/report-view";
 import { TopPredictions } from "@/components/result/top-predictions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useReport } from "@/hooks/use-report";
 import type { PredictResponse } from "@/lib/api";
 import { classLabel } from "@/lib/classes";
 import { formatPercent } from "@/lib/format";
+import { DIAGNOSE_PATH } from "@/lib/i18n/config";
 import type { PreparedPhoto } from "@/lib/image";
 import { useAnalysis } from "@/state/analysis-context";
 
@@ -43,7 +46,7 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
   const startOver = () =>
     startTransition(() => {
       setPhoto(null);
-      router.push(href("/"));
+      router.push(href(DIAGNOSE_PATH));
     });
 
   // Either flag is enough. They share one rule, but a cached report is keyed by
@@ -60,7 +63,7 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <ReadingColumn className="flex flex-col gap-6">
       <Disclaimer />
 
       {uncertain ? (
@@ -69,7 +72,7 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
             <h1
               ref={heading}
               tabIndex={-1}
-              className="flex items-center gap-2 text-2xl font-semibold outline-none"
+              className="flex items-center gap-2 text-h1 outline-none"
             >
               <CircleHelp aria-hidden className="size-7 shrink-0 text-warning-foreground" />
               {t.result.uncertainTitle}
@@ -93,10 +96,10 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
         <>
           <header>
             <p className="font-medium text-muted-foreground">{t.result.likelyEyebrow}</p>
-            <h1 ref={heading} tabIndex={-1} className="text-3xl font-semibold outline-none">
+            <h1 ref={heading} tabIndex={-1} className="text-h1 outline-none">
               {top.condition}
             </h1>
-            {top.crop && <p className="text-lg text-muted-foreground">{top.crop}</p>}
+            {top.crop && <Badge className="mt-2">{top.crop}</Badge>}
             <p className="mt-3">
               {t.result.confidenceLine}{" "}
               <strong className="tabular-nums">
@@ -117,20 +120,20 @@ function Result({ photo, prediction }: { photo: PreparedPhoto; prediction: Predi
         <ScanSearch aria-hidden />
         {t.result.analyzeAnother}
       </Button>
-    </div>
+    </ReadingColumn>
   );
 }
 
 function EmptyResult() {
   const { t, href } = useI18n();
   return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
+    <ReadingColumn className="flex flex-col items-center gap-4 py-12 text-center">
       <ImageOff aria-hidden className="size-12 text-muted-foreground" />
-      <h1 className="text-2xl font-semibold">{t.result.emptyTitle}</h1>
+      <h1 className="text-h1">{t.result.emptyTitle}</h1>
       <p className="text-muted-foreground">{t.result.emptyBody}</p>
       <Button asChild size="lg">
-        <Link href={href("/")}>{t.result.emptyAction}</Link>
+        <Link href={href(DIAGNOSE_PATH)}>{t.result.emptyAction}</Link>
       </Button>
-    </div>
+    </ReadingColumn>
   );
 }

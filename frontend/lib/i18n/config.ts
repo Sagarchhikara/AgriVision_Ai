@@ -13,6 +13,9 @@ export const LOCALES: readonly Locale[] = ["en", "hi", "pa"];
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
+/** The upload screen, where every "check a leaf" link leads. */
+export const DIAGNOSE_PATH = "/diagnose";
+
 /** Each language in its own script, so a reader can always find theirs. */
 export const LOCALE_NAMES: Record<Locale, string> = {
   en: "English",

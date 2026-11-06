@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { I18nProvider } from "@/components/i18n-provider";
-import { SiteHeader } from "@/components/site-header";
 import { isLocale, LOCALES } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 
@@ -17,6 +16,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   return { description: t.app.description };
 }
 
+/** Shell-free on purpose: (app) and (marketing) each bring their own header and width. */
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
@@ -24,20 +24,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
 
   return (
     <I18nProvider locale={locale} dictionary={dictionary}>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-10 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-3 focus:text-primary-foreground"
-      >
-        {dictionary.app.skipToContent}
-      </a>
-      <SiteHeader />
-      <main
-        id="main"
-        tabIndex={-1}
-        className="mx-auto w-full max-w-xl px-4 pt-6 pb-12 outline-none"
-      >
-        {children}
-      </main>
+      {children}
     </I18nProvider>
   );
 }
