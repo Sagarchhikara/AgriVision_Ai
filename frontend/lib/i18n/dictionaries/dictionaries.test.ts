@@ -29,6 +29,10 @@ describe.each([
     expect(strings.map(([path]) => path)).toEqual(flatten(en).map(([path]) => path));
   });
 
+  it("keeps the size placeholder in the upload hint", () => {
+    expect(dictionary.upload.formats).toContain("{size}");
+  });
+
   it("is translated: no string is left in Latin script only", () => {
     const untranslated = strings
       .filter(([path]) => !SAME_IN_EVERY_LANGUAGE.has(path))
