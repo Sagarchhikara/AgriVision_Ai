@@ -82,7 +82,8 @@ def test_plain_predict_has_no_report_fields(make_service, client_for):
     assert "report" not in body
     assert "report_error" not in body
     assert sorted(body) == [
-        "confidence", "heatmap", "prediction", "processing_time_ms", "success", "top_predictions",
+        "confidence", "heatmap", "is_low_confidence", "prediction", "processing_time_ms",
+        "success", "top_predictions",
     ]
 
 

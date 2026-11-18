@@ -1,0 +1,1023 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AgriVision_Ai Inference API",
+    "description": "Inference backend for AgriVision_Ai: EfficientNet-B0 crop disease classification with Grad-CAM explainability.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Liveness check",
+        "description": "Confirms the backend process is up. Does not check model readiness -- see /health for that.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Readiness check",
+        "description": "Reports whether the model is loaded, which device it's running on, and CUDA availability.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Client metadata",
+        "description": "The model's class list, supported report languages, and upload limits, so a client can build its UI and validate input without hardcoding any of them.",
+        "operationId": "meta_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "tags": [
+          "prediction"
+        ],
+        "summary": "Diagnose a crop disease from a leaf image",
+        "description": "Accepts a single leaf image (multipart/form-data), runs it through the EfficientNet-B0 classifier, and returns the top prediction, a ranked top-K list, and a Grad-CAM heatmap explaining which regions of the leaf drove the prediction.\n\nPass `?include_report=true` to also generate the farmer-friendly LLM report in the same round trip. If report generation fails, the prediction is still returned, with the reason in `report_error`.",
+        "operationId": "predict_predict_post",
+        "parameters": [
+          {
+            "name": "include_report",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Also generate the farmer-friendly report for this prediction.",
+              "default": false,
+              "title": "Include Report"
+            },
+            "description": "Also generate the farmer-friendly report for this prediction."
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "en",
+                    "hi",
+                    "pa"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Report language code. Ignored unless include_report is true.",
+              "title": "Language"
+            },
+            "description": "Report language code. Ignored unless include_report is true."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_predict_predict_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictWithReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Corrupt or empty image.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Image exceeds the upload size limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Not an accepted image type (JPEG, PNG, WebP).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid query parameters, e.g. an unsupported language.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Model or Grad-CAM inference failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report": {
+      "post": {
+        "tags": [
+          "report"
+        ],
+        "summary": "Generate a farmer-friendly report for a prediction",
+        "description": "Turns a classifier prediction into a plain-language report: what the disease is, how urgent it is, organic and chemical treatment options, prevention, and an honest confidence caveat.\n\nWhen the prediction's confidence falls below the configured threshold, the response is deliberately non-definitive: `is_low_confidence` is set, `possible_alternatives` lists the other candidates, and the report asks for a better photo instead of naming a disease. The classifier is far less accurate on real field photos than on lab images, so a confident-sounding report on a weak prediction would be actively misleading.",
+        "operationId": "generate_report_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Malformed request, e.g. an unsupported language.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Upstream LLM rate limit hit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "LLM provider failed or returned unusable output.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Report generation is disabled on this deployment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "LLM provider timed out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feedback": {
+      "post": {
+        "tags": [
+          "feedback"
+        ],
+        "summary": "Record whether a diagnosis was correct",
+        "description": "Stores the user's verdict (yes / no / unsure) on a prediction, optionally with the class they believe is correct. The prediction is sent back by value, since /predict keeps no record of what it returned. No image is stored.",
+        "operationId": "submit_feedback_feedback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Malformed feedback, or a class name the model does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_predict_predict_post": {
+        "properties": {
+          "image": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Image",
+            "description": "Leaf image file (JPEG, PNG, or WebP), max 10MB by default."
+          }
+        },
+        "type": "object",
+        "required": [
+          "image"
+        ],
+        "title": "Body_predict_predict_post"
+      },
+      "ClassPrediction": {
+        "properties": {
+          "class_name": {
+            "type": "string",
+            "title": "Class Name",
+            "description": "Predicted disease class name."
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Softmax probability for this class."
+          }
+        },
+        "type": "object",
+        "required": [
+          "class_name",
+          "confidence"
+        ],
+        "title": "ClassPrediction",
+        "description": "A single (class, confidence) pair, used for the top-k ranked list.",
+        "example": {
+          "class_name": "Tomato___Late_blight",
+          "confidence": 0.9821
+        }
+      },
+      "ErrorResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Always false on this model.",
+            "default": false
+          },
+          "error": {
+            "type": "string",
+            "enum": [
+              "invalid_image",
+              "image_too_large",
+              "unsupported_image_type",
+              "invalid_feedback",
+              "inference_error",
+              "report_error",
+              "report_disabled",
+              "llm_configuration_error",
+              "llm_provider_error",
+              "llm_timeout",
+              "llm_rate_limited",
+              "report_parse_error",
+              "validation_error",
+              "internal_error"
+            ],
+            "title": "Error",
+            "description": "Short machine-readable error code, e.g. 'invalid_image'."
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Human-readable explanation of what went wrong."
+          }
+        },
+        "type": "object",
+        "required": [
+          "error",
+          "detail"
+        ],
+        "title": "ErrorResponse",
+        "description": "Uniform error body for every 4xx/5xx the API returns.",
+        "example": {
+          "detail": "Uploaded file is not a valid image (failed to decode).",
+          "error": "invalid_image",
+          "success": false
+        }
+      },
+      "FeedbackRequest": {
+        "properties": {
+          "predicted_class": {
+            "type": "string",
+            "title": "Predicted Class",
+            "description": "Top-1 class the user was shown."
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Top-1 confidence the user was shown."
+          },
+          "top_k": {
+            "items": {
+              "$ref": "#/components/schemas/ClassPrediction"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Top K",
+            "description": "Top-K predictions the user was shown, descending."
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no",
+              "unsure"
+            ],
+            "title": "Verdict",
+            "description": "Whether the user believes the diagnosis was correct."
+          },
+          "correct_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correct Class",
+            "description": "The class the user believes is correct, if they know it. Only allowed when verdict is 'no' or 'unsure'."
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "hi",
+                  "pa"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "UI language the user was using."
+          }
+        },
+        "type": "object",
+        "required": [
+          "predicted_class",
+          "confidence",
+          "top_k",
+          "verdict"
+        ],
+        "title": "FeedbackRequest",
+        "description": "Request body for POST /feedback.",
+        "example": {
+          "confidence": 0.81,
+          "correct_class": "Potato___Early_blight",
+          "language": "hi",
+          "predicted_class": "Potato___Late_blight",
+          "top_k": [
+            {
+              "class_name": "Potato___Late_blight",
+              "confidence": 0.81
+            },
+            {
+              "class_name": "Potato___Early_blight",
+              "confidence": 0.15
+            }
+          ],
+          "verdict": "no"
+        }
+      },
+      "FeedbackResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Always true on this model; failures use ErrorResponse instead.",
+            "default": true
+          },
+          "feedback_id": {
+            "type": "string",
+            "title": "Feedback Id",
+            "description": "Server-assigned ID of the stored feedback record."
+          }
+        },
+        "type": "object",
+        "required": [
+          "feedback_id"
+        ],
+        "title": "FeedbackResponse",
+        "description": "Successful response body for POST /feedback."
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "'healthy' if the model is loaded and ready to serve requests."
+          },
+          "model_loaded": {
+            "type": "boolean",
+            "title": "Model Loaded",
+            "description": "Whether the checkpoint has been loaded into memory."
+          },
+          "device": {
+            "type": "string",
+            "title": "Device",
+            "description": "Device inference currently runs on, e.g. 'cuda', 'mps', 'cpu'."
+          },
+          "cuda_available": {
+            "type": "boolean",
+            "title": "Cuda Available",
+            "description": "Whether torch.cuda.is_available() on this host."
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Backend application version."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "model_loaded",
+          "device",
+          "cuda_available",
+          "version"
+        ],
+        "title": "HealthResponse",
+        "description": "Response body for GET /health, intended for uptime checks / load-balancer probes.",
+        "example": {
+          "cuda_available": true,
+          "device": "cuda",
+          "model_loaded": true,
+          "status": "healthy",
+          "version": "0.1.0"
+        }
+      },
+      "MetaResponse": {
+        "properties": {
+          "classes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Classes",
+            "description": "Every class the model can predict, in the model's output order."
+          },
+          "languages": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "en",
+                "hi",
+                "pa"
+              ]
+            },
+            "type": "array",
+            "title": "Languages",
+            "description": "Supported report languages."
+          },
+          "default_language": {
+            "type": "string",
+            "title": "Default Language",
+            "description": "Language used when a request names none."
+          },
+          "max_upload_bytes": {
+            "type": "integer",
+            "title": "Max Upload Bytes",
+            "description": "Largest accepted image upload, in bytes."
+          },
+          "allowed_image_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Image Types",
+            "description": "Accepted image upload content types."
+          }
+        },
+        "type": "object",
+        "required": [
+          "classes",
+          "languages",
+          "default_language",
+          "max_upload_bytes",
+          "allowed_image_types"
+        ],
+        "title": "MetaResponse",
+        "description": "Response body for GET /meta: what a client needs to build its UI and validate input.",
+        "example": {
+          "allowed_image_types": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "classes": [
+            "Apple___Apple_scab",
+            "Apple___Cedar_apple_rust",
+            "Apple___healthy"
+          ],
+          "default_language": "en",
+          "languages": [
+            "en",
+            "hi",
+            "pa"
+          ],
+          "max_upload_bytes": 10485760
+        }
+      },
+      "PredictWithReportResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Always true on this model; failures use ErrorResponse instead.",
+            "default": true
+          },
+          "prediction": {
+            "type": "string",
+            "title": "Prediction",
+            "description": "Top-1 predicted class name."
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Confidence of the top-1 prediction."
+          },
+          "is_low_confidence": {
+            "type": "boolean",
+            "title": "Is Low Confidence",
+            "description": "True when the top-1 confidence is below the configured threshold, i.e. the prediction is too uncertain to present as a diagnosis. Same rule the report layer uses to switch to its non-definitive variant."
+          },
+          "top_predictions": {
+            "items": {
+              "$ref": "#/components/schemas/ClassPrediction"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Top Predictions",
+            "description": "Top-K predictions ranked by confidence, descending."
+          },
+          "heatmap": {
+            "type": "string",
+            "title": "Heatmap",
+            "description": "Grad-CAM overlay as a base64-encoded PNG data URI (`data:image/png;base64,...`)."
+          },
+          "processing_time_ms": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Processing Time Ms",
+            "description": "End-to-end server-side processing time, in milliseconds."
+          },
+          "report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Present when ?include_report=true and generation succeeded."
+          },
+          "report_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Error",
+            "description": "Present when ?include_report=true and generation failed. The prediction itself still succeeds -- the LLM layer is never allowed to fail a diagnosis."
+          }
+        },
+        "type": "object",
+        "required": [
+          "prediction",
+          "confidence",
+          "is_low_confidence",
+          "top_predictions",
+          "heatmap",
+          "processing_time_ms"
+        ],
+        "title": "PredictWithReportResponse",
+        "description": "Response for POST /predict, extended with the optional report.\n\nBoth added fields default to None and the route sets\n`response_model_exclude_none=True`, so a plain /predict call returns exactly\nthe body it did before this layer existed.",
+        "example": {
+          "confidence": 0.9821,
+          "heatmap": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+          "is_low_confidence": false,
+          "prediction": "Tomato___Late_blight",
+          "processing_time_ms": 42.7,
+          "success": true,
+          "top_predictions": [
+            {
+              "class_name": "Tomato___Late_blight",
+              "confidence": 0.9821
+            },
+            {
+              "class_name": "Tomato___Early_blight",
+              "confidence": 0.0112
+            },
+            {
+              "class_name": "Tomato___healthy",
+              "confidence": 0.0041
+            }
+          ]
+        }
+      },
+      "ReportRequest": {
+        "properties": {
+          "predicted_class": {
+            "type": "string",
+            "title": "Predicted Class",
+            "description": "Model class name, in the dataset's `Crop___Disease` folder format."
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Top-1 softmax confidence."
+          },
+          "top_k": {
+            "items": {
+              "$ref": "#/components/schemas/ClassPrediction"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Top K",
+            "description": "Top-K predictions ranked by confidence, descending."
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "hi",
+                  "pa"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Output language code. Falls back to the configured default."
+          }
+        },
+        "type": "object",
+        "required": [
+          "predicted_class",
+          "confidence",
+          "top_k"
+        ],
+        "title": "ReportRequest",
+        "description": "Request body for POST /report.",
+        "example": {
+          "confidence": 0.9821,
+          "language": "en",
+          "predicted_class": "Tomato___Late_blight",
+          "top_k": [
+            {
+              "class_name": "Tomato___Late_blight",
+              "confidence": 0.9821
+            },
+            {
+              "class_name": "Tomato___Early_blight",
+              "confidence": 0.0112
+            }
+          ]
+        }
+      },
+      "ReportResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Always true on this model; failures use ErrorResponse instead.",
+            "default": true
+          },
+          "report": {
+            "$ref": "#/components/schemas/ReportSchema",
+            "description": "The generated farmer-facing report."
+          },
+          "cached": {
+            "type": "boolean",
+            "title": "Cached",
+            "description": "True if served from cache without calling the LLM."
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "LLM provider that produced the report, e.g. 'gemini'."
+          },
+          "prompt_version": {
+            "type": "string",
+            "title": "Prompt Version",
+            "description": "Version of the prompt template used."
+          },
+          "generation_time_ms": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Generation Time Ms",
+            "description": "Server-side time to produce the report."
+          }
+        },
+        "type": "object",
+        "required": [
+          "report",
+          "cached",
+          "provider",
+          "prompt_version",
+          "generation_time_ms"
+        ],
+        "title": "ReportResponse",
+        "description": "Successful response body for POST /report."
+      },
+      "ReportSchema": {
+        "properties": {
+          "disease_name": {
+            "type": "string",
+            "title": "Disease Name",
+            "description": "Human-readable disease name, e.g. 'Late blight'."
+          },
+          "crop": {
+            "type": "string",
+            "title": "Crop",
+            "description": "Human-readable crop name, e.g. 'Tomato'."
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "Plain-language explanation of what is happening to the plant."
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity",
+            "description": "Urgency of action required."
+          },
+          "severity_reason": {
+            "type": "string",
+            "title": "Severity Reason",
+            "description": "One short sentence justifying the severity rating."
+          },
+          "symptoms_to_check": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Symptoms To Check",
+            "description": "Observable signs the farmer can verify on the plant themselves."
+          },
+          "treatment": {
+            "$ref": "#/components/schemas/TreatmentOptions",
+            "description": "Organic and chemical treatment options."
+          },
+          "prevention": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Prevention",
+            "description": "Practices that reduce the chance of recurrence next season."
+          },
+          "when_to_consult_expert": {
+            "type": "string",
+            "title": "When To Consult Expert",
+            "description": "The conditions under which the farmer should contact an agricultural extension officer."
+          },
+          "confidence_note": {
+            "type": "string",
+            "title": "Confidence Note",
+            "description": "Honest caveat about how certain this diagnosis is and what could change it."
+          },
+          "is_low_confidence": {
+            "type": "boolean",
+            "title": "Is Low Confidence",
+            "description": "True when the prediction fell below the configured confidence threshold, meaning this report is explicitly not a definitive diagnosis.",
+            "default": false
+          },
+          "possible_alternatives": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Possible Alternatives",
+            "description": "Other candidate diseases from the model's top-k, populated on low-confidence reports."
+          }
+        },
+        "type": "object",
+        "required": [
+          "disease_name",
+          "crop",
+          "summary",
+          "severity",
+          "severity_reason",
+          "symptoms_to_check",
+          "treatment",
+          "prevention",
+          "when_to_consult_expert",
+          "confidence_note"
+        ],
+        "title": "ReportSchema",
+        "description": "The farmer-facing report. Every field here is produced by the LLM except\n`is_low_confidence` and `possible_alternatives`, which the server stamps.",
+        "example": {
+          "confidence_note": "The model was highly confident, but confirm the symptoms above before treating.",
+          "crop": "Tomato",
+          "disease_name": "Late blight",
+          "is_low_confidence": false,
+          "possible_alternatives": [],
+          "prevention": [
+            "Avoid overhead watering late in the day",
+            "Rotate to a non-tomato, non-potato crop next season"
+          ],
+          "severity": "high",
+          "severity_reason": "Late blight can destroy an entire tomato crop within one to two weeks.",
+          "summary": "A fast-spreading fungal disease that rots leaves and fruit in cool, wet weather.",
+          "symptoms_to_check": [
+            "Dark brown patches on leaves, often with a pale green edge",
+            "White fuzzy growth on the underside of leaves in humid mornings"
+          ],
+          "treatment": {
+            "chemical": [
+              "Copper-based protectant sprays are commonly used for this disease"
+            ],
+            "organic": [
+              "Remove and destroy affected leaves and fruit away from the field",
+              "Improve airflow by widening spacing between plants"
+            ]
+          },
+          "when_to_consult_expert": "Contact your local agricultural extension officer before applying any chemical spray, and immediately if more than a few plants are affected."
+        }
+      },
+      "RootResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Static confirmation that the backend process is up."
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "RootResponse",
+        "description": "Response body for GET /.",
+        "example": {
+          "message": "AgriVision_Ai backend running"
+        }
+      },
+      "Severity": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "Severity",
+        "description": "How urgently the farmer needs to act."
+      },
+      "TreatmentOptions": {
+        "properties": {
+          "organic": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Organic",
+            "description": "Non-chemical / cultural treatment steps."
+          },
+          "chemical": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chemical",
+            "description": "Chemical treatment approaches, described by active-ingredient class only -- never brand names or dosages, which require a local expert."
+          }
+        },
+        "type": "object",
+        "title": "TreatmentOptions",
+        "description": "Treatment split by approach, so a farmer who can't access or afford chemical\ninputs still gets an actionable answer from the organic list."
+      }
+    }
+  }
+}

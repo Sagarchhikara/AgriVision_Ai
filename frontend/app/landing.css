@@ -1,0 +1,145 @@
+/*
+ * Landing page only: imported by app/[locale]/(marketing)/layout.tsx, so none of
+ * this reaches the diagnosis screens. Colours and fonts come from globals.css.
+ *
+ * Motion runs only under `no-preference`, and nothing here hides content unless
+ * the browser can also animate it back in, so a page without scroll-driven
+ * animation support, or without JavaScript, simply shows everything.
+ */
+
+.landing {
+  /* Charcoal is 4.3:1 on Terracotta, just short of AA, hence a shade darker. */
+  --on-highlight: #1e201b;
+  --highlight-hover: #d08f6c;
+  /* Terracotta itself is 3:1 on Canvas: too light for text. */
+  --accent-text: #8a4a2b;
+  --hairline-dark: rgb(255 255 255 / 0.16);
+}
+
+/* Tight display settings suit Latin only: Devanagari and Gurmukhi need room above
+   and below for matras, and tracking would break their headstroke. */
+.display-xl {
+  font-size: clamp(2.5rem, 1.4rem + 4.6vw, 4.75rem);
+  font-weight: 800;
+  line-height: 1.28;
+}
+.display-lg {
+  font-size: clamp(1.875rem, 1.3rem + 2.4vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.32;
+}
+html:lang(en) .display-xl {
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+html:lang(en) .display-lg {
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+html:lang(en) .eyebrow {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* A survey-sheet grid: the page's recurring scientific motif. */
+.graticule {
+  background-image:
+    linear-gradient(to right, rgb(185 168 139 / 0.28) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(185 168 139 / 0.28) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.graticule-photo {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.2) 1px, transparent 1px);
+  background-size: 12.5% 12.5%;
+}
+
+.on-dark :focus-visible {
+  outline-color: var(--sand);
+}
+
+/* FAQ disclosure marker */
+.faq-item > summary {
+  list-style: none;
+}
+.faq-item > summary::-webkit-details-marker {
+  display: none;
+}
+.faq-item[open] .faq-icon {
+  rotate: 45deg;
+}
+
+.lift {
+  transition:
+    translate 180ms ease,
+    box-shadow 180ms ease;
+}
+@media (hover: hover) {
+  .lift:hover {
+    translate: 0 -3px;
+    box-shadow: 0 10px 28px rgb(40 43 37 / 0.1);
+  }
+}
+
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    translate: 0 20px;
+  }
+}
+@keyframes plate-in {
+  from {
+    opacity: 0;
+    clip-path: inset(6% 0 6% 0 round 18px);
+    scale: 1.02;
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 18px);
+  }
+}
+@keyframes sweep {
+  from {
+    top: 0;
+    opacity: 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* The sweep line is invisible unless animated, so reduced motion never shows it. */
+.scan-sweep {
+  opacity: 0;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  html:has(.landing) {
+    scroll-behavior: smooth;
+  }
+  .hero-plate {
+    animation: plate-in 720ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .hero-card {
+    animation: landing-rise 560ms 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .hero-card-late {
+    animation-delay: 460ms;
+  }
+  /* Runs once. No looping animation anywhere on this page. */
+  .scan-sweep {
+    animation: sweep 1700ms 620ms ease-in-out 1 both;
+  }
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: landing-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 24%;
+    }
+  }
+}

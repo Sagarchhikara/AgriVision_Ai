@@ -1,6 +1,6 @@
 # AgriVision_Ai — Handover
 
-Last updated 2026-09-30. Written so someone picking this up can continue without re-deriving context from the code.
+Last updated 2026-11-02. Written so someone picking this up can continue without re-deriving context from the code.
 
 ## 1. What this project is
 
@@ -14,13 +14,13 @@ Crop disease diagnosis from leaf photos: an EfficientNet-B0 classifier, Grad-CAM
 
 - Trained model: EfficientNet-B0 (`timm`), 28 classes, two-stage transfer learning (frozen head → full fine-tune).
 - **Lab photos (PlantVillage-sourced test split): 96% accuracy** (`outputs/predictions/classification_report.txt`).
-- **Real field photos (PlantDoc-sourced, held out): ~52%** on a 25-image sample — see §5 for why this replaces the old 22% figure and why 52% is still not deployable.
+- **Real field photos (PlantDoc-sourced, held out): 56.9%** (226/397) on the full held-out `pd_` set — see §5 for why this replaces the old 22% figure and why it is still not deployable.
 
 ## 3. Repo layout
 
 ```
 main.py                    # training entry point (two-stage transfer learning)
-evaluate.py                # standalone test-set evaluation
+evaluate.py                # standalone test-set evaluation (--prefix pd_ restricts to held-out field photos)
 configs/config.yaml        # single source of truth: dataset, training, model, backend, llm
 
 data/
@@ -79,7 +79,12 @@ Measured properly on held-out `pd_` images in `datasets/test` (25-image sample, 
 - **8/25 fell below the 0.60 report threshold** and correctly produced non-definitive reports.
 - **6/25 were wrong at 78–94% confidence.** This is the dangerous failure mode: the confidence threshold catches uncertainty, not overconfidence, so these produce confident, wrong advice.
 
-Before acting on these numbers, re-run the measurement across all 397 held-out images rather than the 25-image sample.
+**Full re-measurement (2026-11-02, all 397 held-out `pd_` images):** `python evaluate.py --split test --prefix pd_ --output_dir outputs/predictions_field_pd`
+
+- **Accuracy 56.9%** (226/397); macro F1 0.53. The 25-image sample (52%) was a fair estimate.
+- **171 wrong; 97 of them (24.4% of all images) at confidence >= 0.60**, 60 (15.1%) at >= 0.80, 37 (9.3%) at >= 0.90. Roughly 1 in 4 field photos gets a confident, wrong, non-hedged report.
+- Weakest classes: Potato early blight (F1 0.07, mostly called late blight), Tomato mosaic virus (0.17), Tomato leaf mold (0.28), Tomato bacterial spot (0.29). Strong: Squash powdery mildew (0.95), Strawberry healthy (0.88).
+- Outputs (report, confusion matrix, `misclassified.csv` sorted by confidence) are in `outputs/predictions_field_pd/`. `outputs/predictions_plantdoc/` remains invalid.
 
 Also worth knowing: some PlantDoc images are web-scraped and oddly colored (one grape-leaf photo is purple-dominant, R=151/G=125/B=178). Verified this is the source files, not a channel-order bug in preprocessing.
 
@@ -130,7 +135,7 @@ If report generation fails on `/predict?include_report=true`, the prediction sti
 
 ## 8. Likely next steps
 
-1. **Re-measure field accuracy across all 397 held-out `pd_` images** and regenerate `outputs/predictions_plantdoc/` properly (the current contents are invalid, see §5).
+1. ~~Re-measure field accuracy~~ — done, see §5. Delete the invalid `outputs/predictions_plantdoc/`.
 2. **Attack the confident-wrong cases.** Raising the confidence threshold does not help — those predictions are wrong *above* it. Options: calibration (temperature scaling), heavier PlantDoc weighting during training, or field-condition augmentation (backgrounds, lighting, occlusion). `outputs/heatmaps_field_plantdoc/misclassified/` has Grad-CAM overlays worth a visual pass first.
 3. Frontend / web deployment — nothing built yet.
 4. Backend has not been load-tested, containerized, or deployed.

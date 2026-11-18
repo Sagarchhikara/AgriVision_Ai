@@ -12,15 +12,24 @@ them pass on a machine that has no trained model at all.
 
 from __future__ import annotations
 
+import io
 import json
 
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image
 
-from backend.api.deps import get_report_service
-from backend.core.config import Settings
+from backend.api.deps import (
+    get_feedback_store,
+    get_gradcam_service,
+    get_inference_service,
+    get_report_service,
+)
+from backend.core.config import Settings, get_settings
 from backend.schemas.prediction import ClassPrediction
 from backend.schemas.report import ReportRequest
+from backend.services.feedback_store import FeedbackStore
+from backend.services.inference import ClassScore, PredictionResult
 from backend.services.llm.fake import FakeProvider
 from backend.services.report_cache import InMemoryTTLCache
 from backend.services.report_service import ReportService
@@ -128,3 +137,90 @@ def client_for():
 def client(service, client_for):
     """TestClient with the report service swapped for the fake-backed one."""
     return client_for(service)
+
+
+# -- Model-side fakes, for tests of the routes around the model --------------
+
+CLASS_NAMES = [
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Potato___healthy",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___healthy",
+]
+
+
+class _FakePreprocessor:
+    def to_tensor(self, image):
+        return "tensor"
+
+    def to_display_array(self, image):
+        return "display-array"
+
+
+class FakeInferenceService:
+    """Stands in for the model: a fixed class list and a scripted top-1 confidence."""
+
+    def __init__(self, confidence: float = 0.98):
+        self.class_names = CLASS_NAMES
+        self.preprocessor = _FakePreprocessor()
+        self.confidence = confidence
+
+    def predict(self, input_tensor):
+        runner_up = 1.0 - self.confidence
+        return PredictionResult(
+            pred_class_idx=4,
+            class_name="Tomato___Late_blight",
+            confidence=self.confidence,
+            top_k=[
+                ClassScore(class_name="Tomato___Late_blight", confidence=self.confidence),
+                ClassScore(class_name="Tomato___Early_blight", confidence=runner_up * 0.7),
+                ClassScore(class_name="Tomato___healthy", confidence=runner_up * 0.3),
+            ],
+            input_tensor=input_tensor,
+            inference_time_ms=1.0,
+        )
+
+
+class FakeGradCAMService:
+    def generate_heatmap(self, input_tensor, display_image, target_class_idx):
+        return "data:image/png;base64,FAKE"
+
+
+def image_upload(
+    image_format: str = "PNG", content_type: str = "image/png", data: bytes | None = None
+) -> dict:
+    """A multipart `image` field: a tiny real image in `image_format`, unless raw `data` is given."""
+    if data is None:
+        buffer = io.BytesIO()
+        Image.new("RGB", (8, 8), "green").save(buffer, format=image_format)
+        data = buffer.getvalue()
+    return {"image": ("leaf", data, content_type)}
+
+
+@pytest.fixture
+def feedback_dir(tmp_path):
+    return tmp_path / "feedback"
+
+
+@pytest.fixture
+def make_api_client(settings, make_service, client_for, feedback_dir):
+    """
+    Builds a TestClient with every app.state service faked: the model at a given
+    confidence, Grad-CAM, the report service (FakeProvider), and a feedback store
+    writing under tmp_path. Settings overrides apply to the routes and the report
+    service alike, so both see the same confidence threshold.
+    """
+    from backend.app import app
+
+    def _build(confidence: float = 0.98, **settings_overrides) -> TestClient:
+        effective = settings.model_copy(update=settings_overrides)
+        app.dependency_overrides[get_settings] = lambda: effective
+        app.dependency_overrides[get_inference_service] = lambda: FakeInferenceService(confidence)
+        app.dependency_overrides[get_gradcam_service] = lambda: FakeGradCAMService()
+        store = FeedbackStore(feedback_dir, app_version="test")
+        app.dependency_overrides[get_feedback_store] = lambda: store
+        return client_for(make_service(FakeProvider([report_json()]), **settings_overrides))
+
+    return _build

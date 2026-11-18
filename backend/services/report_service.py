@@ -89,7 +89,7 @@ class ReportService:
         "this plant is healthy" prediction is exactly the false negative that
         costs a farmer their crop, so it must not produce a reassuring report.
         """
-        if confidence < self.settings.llm_confidence_threshold:
+        if self.settings.is_low_confidence(confidence):
             return PromptVariant.LOW_CONFIDENCE
         if parse_class_name(predicted_class).is_healthy:
             return PromptVariant.HEALTHY

@@ -32,6 +32,7 @@ router = APIRouter(tags=["report"])
     "/report",
     response_model=ReportResponse,
     responses={
+        422: {"model": ErrorResponse, "description": "Malformed request, e.g. an unsupported language."},
         429: {"model": ErrorResponse, "description": "Upstream LLM rate limit hit."},
         502: {"model": ErrorResponse, "description": "LLM provider failed or returned unusable output."},
         503: {"model": ErrorResponse, "description": "Report generation is disabled on this deployment."},

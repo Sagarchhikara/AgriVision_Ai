@@ -54,6 +54,10 @@ backend:
   port: 8000
   log_level: INFO
   log_file: outputs/logs/backend.log
+  # Browser origins allowed to call the API. Override per deployment with
+  # AGRIVISION_CORS_ORIGINS='["https://your-frontend.example"]'. Avoid "*".
   cors_origins:
-    - "*"
+    - "http://localhost:3000"
+  max_upload_bytes: 10485760   # 10 MB
+  feedback_dir: outputs/feedback
   device: auto
