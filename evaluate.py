@@ -116,6 +116,7 @@ def main():
     parser.add_argument("--config", default="configs/config.yaml", help="Path to config.yaml")
     parser.add_argument("--dataset_root", default=None, help="Path to dataset root (e.g. datasets/ or datasets/PlantDoc)")
     parser.add_argument("--split", default="test", help="Dataset split to evaluate on (default: test)")
+    parser.add_argument("--prefix", default=None, help="Only evaluate files whose name starts with this (e.g. pd_ for held-out PlantDoc field photos)")
     parser.add_argument("--output_dir", default=None, help="Output directory for predictions and metrics")
     args = parser.parse_args()
 
@@ -148,6 +149,12 @@ def main():
         num_workers=config.get("dataset", {}).get("num_workers", 4),
         pin_memory=(device.type == "cuda"),
     )
+    if args.prefix:
+        keep = [i for i, (p, _) in enumerate(test_dataset.samples) if os.path.basename(p).startswith(args.prefix)]
+        test_dataset.samples = [test_dataset.samples[i] for i in keep]
+        test_dataset.targets = [test_dataset.targets[i] for i in keep]
+        if hasattr(test_dataset, "imgs"):
+            test_dataset.imgs = test_dataset.samples
     class_names = test_dataset.classes
     print(f"Test set: {len(test_dataset)} images across {len(class_names)} classes")
 
